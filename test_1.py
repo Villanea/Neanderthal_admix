@@ -48,6 +48,7 @@ def neanderthal_admixture_model(num_modern=10,anc_pop = 1, anc_num = 1, anc_time
 			#write inside loop more inefficient, but ok for now
 			outFile.write(N_freq)
 			outFile.write('\n')
+		print "Done with this sim"
 	#To do: We need mean frequency across all replicates
 	return np.array(freq)
 	outFile.close()"""
