@@ -1,7 +1,7 @@
-import scipy #!/usr/bin/env python
+#!/usr/bin/env python
 
-import msprime as msp
-import numpy as np
+#import msprime as msp
+#import numpy as np
 
 #based on Schraiber Admixture model: https://github.com/Schraiber/continuity/blob/master/ancient_genotypes.py
 #class FreqError(Exception):
@@ -14,7 +14,7 @@ import numpy as np
 #split time 12000 gen
 #f 0.03
 #f time 100-2500 gen
-
+		
 def neanderthal_admixture_model(num_modern=10,anc_pop = 1, anc_num = 1, anc_time=900,mix_time=1000,split_time=12000,f=0.03,Ne0=10000,Ne1=2500,mu=1.5e-8,length=1000,num_rep=1,coverage=False):
 	#when is best time to sample Neanderthal? 100 gen before f?
 	outFile = open('outfile.csv', 'w')
@@ -36,15 +36,12 @@ def neanderthal_admixture_model(num_modern=10,anc_pop = 1, anc_num = 1, anc_time
 	sim_num = 0	
 	for sim in sims:
 	#what is the correct syntax to get a specific fragment? is it for variant in sim.variants?
-		for variant in sim.variants():
+		for tree in sim.trees()
 			cur_node = get_samples(population_id=1)
-			lenght = tree.get_branch_length(cur_node)
 			#check that is returning a length in gens
-			print lenght
-			while lenght < mix_time:
+			while tree.get_branch_length(tree.get_parent(cur_node)) < split_time:
 				cur_node = tree.get_parent(cur_node)
-				lenght = lenght + tree.get_branch_length(cur_node)
-			N_freq = (get_num_leaves(cur_node) - 1)/num_modern
+			N_freq = (get_num_leaves(cur_node) - 1)
 			freq.append(N_freq)
 			#check that is printing a fraction
 			print N_freq
@@ -53,4 +50,4 @@ def neanderthal_admixture_model(num_modern=10,anc_pop = 1, anc_num = 1, anc_time
 			outFile.write('\n')
 	#To do: We need mean frequency across all replicates
 	return np.array(freq)
-	outFile.close()
+	outFile.close()"""
