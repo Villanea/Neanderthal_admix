@@ -36,7 +36,7 @@ def neanderthal_admixture_model(num_modern=10,anc_pop = 1, anc_num = 1, anc_time
 	sim_num = 0	
 	for sim in sims:
 	#what is the correct syntax to get a specific fragment? is it for variant in sim.variants?
-		for tree in sim.trees()
+		for tree in sim.trees():
 			cur_node = get_samples(population_id=1)
 			#check that is returning a length in gens
 			while tree.get_branch_length(tree.get_parent(cur_node)) < split_time:
