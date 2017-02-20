@@ -17,7 +17,7 @@ class FreqError(Exception):
 #f 0.03
 #f time 100-2500 gen
 		
-def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_time=900,mix_time=1000,split_time=12000,f=0.03,Ne0=10000,Ne1=2500,mu=1.5e-8,rho=1.0e-8,length=1000,num_rep=10,coverage=False):
+def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_time=900,mix_time=1000,split_time=12000,f=0.03,Ne0=10000,Ne1=2500,mu=1.5e-8,rho=1.0e-8,length=10000000,num_rep=100,coverage=False):
 	#when is best time to sample Neanderthal? 100 gen before f?
 	#error catching, leave there for now
 	if f < 0 or f > 1:
