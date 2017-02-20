@@ -44,9 +44,9 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 				cur_node = tree.get_parent(cur_node)
 			N_freq = (tree.get_num_leaves(cur_node) - 1)
 			freq.append(N_freq)
-			data = [] 
-			data.append(str(N_freq)+","+str(F_length))
-			outfile.write(data)
+			outfile.write(str(N_freq))
+			outfile.write(",")
+			outfile.write(str(F_length))
 			outfile.write("\n")
 	outfile.close()
 	return np.array(freq), np.array(length)
