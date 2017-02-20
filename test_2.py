@@ -37,13 +37,13 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	sim_num = 0	
 	for sim in sims:
 		for tree in sim.trees():
+			F_length = tree.get_length()
+			length.append(F_length)
 			cur_node = len(samples)-1  # the very last leaf, when adding more modern pops make sure Neanderthal is still last
 			while tree.get_time(tree.get_parent(cur_node)) < split_time:
 				cur_node = tree.get_parent(cur_node)
 			N_freq = (tree.get_num_leaves(cur_node) - 1)
-			F_length = (tree.get_length(cur_node))
 			freq.append(N_freq)
-			length.append(F_length)
 			data = [] 
 			data.append(str(N_freq)+","+str(F_length))
 			outfile.write(data)
