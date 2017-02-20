@@ -2,7 +2,6 @@
 
 import msprime as msp
 import numpy as np
-import re
 
 #based on Schraiber Admixture model: https://github.com/Schraiber/continuity/blob/master/ancient_genotypes.py
 class FreqError(Exception):
