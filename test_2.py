@@ -32,7 +32,7 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	outfile = open('outfile.csv', 'w')
 	outfile.write("frequency,length")
 	outfile.write('\n')
-	freq = []
+	freq = [0]
 	length = []
 	sim_num = 0	
 	for sim in sims:
@@ -52,6 +52,7 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 			outfile.write(",")
 			outfile.write(str(F_length))
 			outfile.write("\n")
+	del freq[0]
 	outfile.close()
 	return np.array(freq), np.array(length)
 
