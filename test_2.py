@@ -52,12 +52,15 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 				length.append(F_length)
 				data.append(N_freq)
 				data.append(F_length)
-				'\n'.join(data)
 	del freq[0] #the first 0 prevents the very first loop from crashing
 	outfile = open('outfile.csv', 'w')
 	outfile.write("frequency,length")
 	outfile.write('\n')
-	outfile.write(str(data))
+	list = re.split('\n', outfile.read())
+	list = [1:len(length)]
+	for line in range(0,len(list)):
+		SSC_log.write(data[line])
+		SSC_log.write('\n')
 	outfile.close()
 	return np.array(freq), np.array(length)
 
