@@ -44,7 +44,6 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 			if N_freq == freq[-1]:
 				F_length = F_length+length[-1]
 				length[-1] = F_length
-				break
 			else:			
 				freq.append(N_freq)
 				length.append(F_length)
