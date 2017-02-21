@@ -34,26 +34,33 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	outfile.write('\n')
 	freq = [0]
 	length = []
+	data = []
 	sim_num = 0	
 	for sim in sims:
 		for tree in sim.trees():
-			F_length = tree.get_length()
+			
 			cur_node = len(samples)-1  # the very last leaf, when adding more modern pops make sure Neanderthal is still last
 			while tree.get_time(tree.get_parent(cur_node)) < split_time:
 				cur_node = tree.get_parent(cur_node)
+			F_length = tree.get_length()
 			N_freq = (tree.get_num_leaves(cur_node) - 1) #minus our lone Neanderthal
-			if N_freq == freq[-1]: #hope the very first loop does not crash
+			if N_freq == freq[-1]:
 				F_length = F_length+length[-1]
 				length[-1] = F_length
+				break
 			else:			
 				length.append(F_length)
 				freq.append(N_freq)
-			outfile.write(str(N_freq))
-			outfile.write(",")
-			outfile.write(str(F_length))
-			outfile.write("\n")
-	del freq[0]
+				data.append(N_freq)
+				data.append(",")
+				data.append(F_length)
+				data.append("\n")
+	del freq[0] #the first 0 prevents the very first loop from crashing
+	outfile = open('outfile.csv', 'w')
+	outfile.write("frequency,length")
+	outfile.write('\n')
+	outfile.write(str(data))
 	outfile.close()
 	return np.array(freq), np.array(length)
 
-N_admix = neanderthal_admixture_model()
+N_admix = neanderthal_admixture_model(length=1000)
