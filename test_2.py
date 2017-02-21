@@ -4,7 +4,6 @@
 #To do: concatenate "invisible" fragments - sequential fragments with the same frequency 
 import msprime as msp
 import numpy as np
-import re
 #based on Schraiber Admixture model: https://github.com/Schraiber/continuity/blob/master/ancient_genotypes.py
 class FreqError(Exception):
 	pass
@@ -32,7 +31,7 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	outfile = open('outfile.csv', 'w')
 	outfile.write("frequency,length")
 	outfile.write('\n')
-	freq = [0]
+	freq = [1000000000]
 	length = []
 	data = []
 	sim_num = 0	
@@ -56,11 +55,9 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	outfile = open('outfile.csv', 'w')
 	outfile.write("frequency,length")
 	outfile.write('\n')
-	list = re.split('\n', outfile.read())
-	list = [1:len(length)]
-	for line in range(0,len(list)):
-		SSC_log.write(data[line])
-		SSC_log.write('\n')
+	for line in range(0,len(length)):
+		outfile.write(str.data[line])
+		outfile.write('\n')
 	outfile.close()
 	return np.array(freq), np.array(length)
 
