@@ -56,7 +56,7 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	outfile.write("frequency,length")
 	outfile.write('\n')
 	for line in range(0,len(length)):
-		outfile.write(str.data[line])
+		outfile.write(str(data[line]))
 		outfile.write('\n')
 	outfile.close()
 	return np.array(freq), np.array(length)
