@@ -31,9 +31,9 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	outfile = open('outfile.csv', 'w')
 	outfile.write("frequency,length")
 	outfile.write('\n')
-	freq = [1000000000]
+	freq = [1000000000] #gigantic number so it can never be == on the first loop
 	length = []
-	data = []
+	
 	sim_num = 0	
 	for sim in sims:
 		for tree in sim.trees():
@@ -49,9 +49,9 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 			else:			
 				freq.append(N_freq)
 				length.append(F_length)
-				data.append(N_freq)
-				data.append(F_length)
+				
 	del freq[0] #the first 0 prevents the very first loop from crashing
+	data = zip(freq,length)
 	outfile = open('outfile.csv', 'w')
 	outfile.write("frequency,length")
 	outfile.write('\n')
