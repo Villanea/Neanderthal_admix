@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-#test_2 is the simple model including recombination 
-
+#test_3 is the simple model including recombination with concatenation of lengths of equal freq fragments - it doesn not work well, it artificially concatenates unrelated 0 freq fragments
+#TODO: concatenate "invisible" fragments - sequential fragments with the same frequency 
 import msprime as msp
 import numpy as np
 #based on Schraiber Admixture model: https://github.com/Schraiber/continuity/blob/master/ancient_genotypes.py
@@ -31,7 +31,7 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	outfile = open('outfile.csv', 'w')
 	outfile.write("frequency,length")
 	outfile.write('\n')
-	freq = []
+	freq = [1000000000] #gigantic number so it can never be == on the first loop
 	length = []
 	sim_num = 0	
 	for sim in sims:
@@ -41,8 +41,14 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 				cur_node = tree.get_parent(cur_node)
 			F_length = tree.get_length()
 			N_freq = (tree.get_num_leaves(cur_node) - 1) #minus our lone Neanderthal
-			freq.append(N_freq)
-			length.append(F_length)
+			if N_freq == freq[-1]:
+				F_length = F_length+length[-1]
+				length[-1] = F_length
+				#TODO what about 0 followed by another 0?
+			else:			
+				freq.append(N_freq)
+				length.append(F_length)
+	del freq[0] #the first item prevents the very first loop from crashing
 	outfile = open('outfile.csv', 'w')
 	outfile.write("frequency,length")
 	outfile.write('\n')
