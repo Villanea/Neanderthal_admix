@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #test_2 is the simple model including recombination
-#To do: concatenate "invisible" fragments - sequential fragments with the same frequency 
+#TODO: concatenate "invisible" fragments - sequential fragments with the same frequency 
 import msprime as msp
 import numpy as np
 #based on Schraiber Admixture model: https://github.com/Schraiber/continuity/blob/master/ancient_genotypes.py
@@ -44,6 +44,7 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 			if N_freq == freq[-1]:
 				F_length = F_length+length[-1]
 				length[-1] = F_length
+				#TODO what about 0 followed by another 0?
 			else:			
 				freq.append(N_freq)
 				length.append(F_length)
