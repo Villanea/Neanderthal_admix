@@ -30,9 +30,6 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	divergence = [msp.MassMigration(time=mix_time,source=0,destination=1,proportion = f),
 			msp.MassMigration(time=split_time,source=1,destination=0,proportion=1.0)]
 	sims = msp.simulate(samples=samples,Ne=Ne0,population_configurations=pop_config,demographic_events=divergence,mutation_rate=mu,recombination_rate=rho,length=length,num_replicates=num_rep)
-	outfile = open('outfile.csv', 'w')
-	outfile.write("frequency,length")
-	outfile.write('\n')
 	win = []
 	freq = []
 	leng = []
@@ -47,7 +44,8 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	for sim in sims:
 		#select (number_sites) random position
 		for window in windows
-			randint
+			
+			cur_site = random.randint(cur_start,cur_end)
 			for tree in sim.trees():
 				cur_node = len(samples)-1  #the very last leaf, when adding more modern pops make sure Neanderthal is still last
 				while tree.get_time(tree.get_parent(cur_node)) < split_time:
@@ -57,7 +55,7 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 				F_int = tree.get_interval(cur_node)
 				interval.append(F_int)
 				cur_win = range(cur_start,cur_end)
-				if randint() is in range star-to-end of fragment, record frequency
+				if cur_site in range star-to-end of fragment, record frequency
 					win.append(cur_win)
 					freq.append(N_freq)
 					leng.append(F_length)
