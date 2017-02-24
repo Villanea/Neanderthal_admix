@@ -35,17 +35,15 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	freq = []
 	leng = []
 	#FYI mean fragment length from test_2 model ~6000 bp
-	sim_num = 0	
+	sim_num = 0	#TODO remove this
 	windows = [0]*(length/window_size)
 	for sim in sims:
 		cur_win = 1
 		cur_start = 0
 		cur_end = window_size-1
 		for window in windows:
-			print(cur_win)
 			for i in range (num_SNP): #populates list of SNP positions
 				cur_site = random.randint(cur_start,cur_end)
-				print(cur_site)
 				for tree in sim.trees():
 					cur_node = len(samples)-1  #the very last leaf, when adding more modern pops make sure Neanderthal is still last
 					while tree.get_time(tree.get_parent(cur_node)) < split_time:
@@ -73,4 +71,4 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	outfile.close()
 	return np.array(win), np.array(freq), np.array(leng)
 
-N_admix = neanderthal_admixture_model(num_rep=10)
+N_admix = neanderthal_admixture_model(num_rep=10, window_size = 100000)
