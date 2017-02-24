@@ -45,19 +45,19 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 		for window in windows:
 			print(cur_win)
 			for i in range (num_SNP): #populates list of SNP positions
-					cur_site = random.randint(cur_start,cur_end)
-					print(cur_site)
-			for tree in sim.trees():
-				cur_node = len(samples)-1  #the very last leaf, when adding more modern pops make sure Neanderthal is still last
-				while tree.get_time(tree.get_parent(cur_node)) < split_time:
-					cur_node = tree.get_parent(cur_node)
-				F_length = tree.get_length()
-				N_freq = (tree.get_num_leaves(cur_node) - 1) #minus our lone Neanderthal
-				F_int = list(tree.get_interval())
-				if cur_site in range(int(F_int[0]),int(F_int[1])):
-					win.append(cur_win)
-					freq.append(N_freq)
-					leng.append(F_length)
+				cur_site = random.randint(cur_start,cur_end)
+				print(cur_site)
+				for tree in sim.trees():
+					cur_node = len(samples)-1  #the very last leaf, when adding more modern pops make sure Neanderthal is still last
+					while tree.get_time(tree.get_parent(cur_node)) < split_time:
+						cur_node = tree.get_parent(cur_node)
+					F_length = tree.get_length()
+					N_freq = (tree.get_num_leaves(cur_node) - 1) #minus our lone Neanderthal
+					F_int = list(tree.get_interval())
+					if cur_site in range(int(F_int[0]),int(F_int[1])):
+						win.append(cur_win)
+						freq.append(N_freq)
+						leng.append(F_length)
 			cur_start += window_size
 			cur_end += window_size
 			cur_win += 1
@@ -74,4 +74,4 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	outfile.close()
 	return np.array(win), np.array(freq), np.array(leng)
 
-N_admix = neanderthal_admixture_model(num_rep=1)
+N_admix = neanderthal_admixture_model()
