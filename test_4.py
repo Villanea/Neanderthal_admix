@@ -39,19 +39,21 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	cur_start = 0
 	cur_end = window_size-1
 	windows = [0]*(length/window_size)
+	print windows
 	cur_win = 1
 	for sim in sims:
 		for window in windows:
+			print(cur_win)
 			for tree in sim.trees():
 				cur_node = len(samples)-1  #the very last leaf, when adding more modern pops make sure Neanderthal is still last
 				while tree.get_time(tree.get_parent(cur_node)) < split_time:
 					cur_node = tree.get_parent(cur_node)
 				F_length = tree.get_length()
 				N_freq = (tree.get_num_leaves(cur_node) - 1) #minus our lone Neanderthal
-				F_int = list(tree.get_interval()) #if code works optimize by inserting inside loop
-				#interval.append(F_int)
+				F_int = list(tree.get_interval())
 				for i in range (num_SNP): #populates list of SNP positions
 					cur_site = random.randint(cur_start,cur_end)
+					print(cur_site)
 					if cur_site in range(int(F_int[0]),int(F_int[1])):
 						win.append(cur_win)
 						freq.append(N_freq)
