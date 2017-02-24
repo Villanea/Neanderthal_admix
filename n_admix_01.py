@@ -1,13 +1,6 @@
-#!/usr/bin/env python
-
-#test_4 is an extension of test_2, with a module generating windows of 1Mb and sampling random sites to calculate freq emulating ascertainment bias IRL
-
 import msprime as msp
 import numpy as np
 import random
-#based on Schraiber Admixture model: https://github.com/Schraiber/continuity/blob/master/ancient_genotypes.py
-class FreqError(Exception):
-	pass
 #Sim parameters from Moorjani et al 2016
 #Modern humans Ne 10000, samples 10
 #Neanderthal Ne 2500, samples 0
