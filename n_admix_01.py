@@ -54,14 +54,14 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 			cur_start += window_size
 			cur_end += window_size
 			cur_win += 1
-	outfile = open('outfile.csv', 'w')
+	outfile = open('outfile.txt', 'w')
 	outfile.write("window,frequency,length")
 	outfile.write('\n')
 	for line in range(0,len(leng)):
 		outfile.write(str(win[line]))
-		outfile.write(',')
+		outfile.write('\t')
 		outfile.write(str(freq[line]))
-		outfile.write(',')
+		outfile.write('\t')
 		outfile.write(str(leng[line]))
 		outfile.write('\n')
 	outfile.close()
