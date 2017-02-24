@@ -40,8 +40,8 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	cur_end = window_size-1
 	windows = [0]*(length/window_size)
 	print windows
-	cur_win = 1
 	for sim in sims:
+		cur_win = 1
 		for window in windows:
 			print(cur_win)
 			for i in range (num_SNP): #populates list of SNP positions
@@ -74,4 +74,4 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	outfile.close()
 	return np.array(win), np.array(freq), np.array(leng)
 
-N_admix = neanderthal_admixture_model()
+N_admix = neanderthal_admixture_model(num_rep=1)
