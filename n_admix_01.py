@@ -55,7 +55,7 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 			cur_end += window_size
 			cur_win += 1
 	outfile = open('outfile.txt', 'w')
-	outfile.write("window,frequency,length")
+	outfile.write("window\tfrequency\tlength")
 	outfile.write('\n')
 	for line in range(0,len(leng)):
 		outfile.write(str(win[line]))
