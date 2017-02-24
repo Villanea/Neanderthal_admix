@@ -71,4 +71,4 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	outfile.close()
 	return np.array(win), np.array(freq), np.array(leng)
 
-N_admix = neanderthal_admixture_model(num_rep=10, window_size = 100000)
+N_admix = neanderthal_admixture_model(window_size = 100000)
