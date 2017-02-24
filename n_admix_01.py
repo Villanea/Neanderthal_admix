@@ -1,6 +1,9 @@
 import msprime as msp
 import numpy as np
 import random
+
+import sys
+
 #Sim parameters from Moorjani et al 2016
 #Modern humans Ne 10000, samples 10
 #Neanderthal Ne 2500, samples 0
@@ -64,4 +67,10 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	outfile.close()
 	return np.array(win), np.array(freq), np.array(leng)
 
-N_admix = neanderthal_admixture_model(window_size = 100000)
+num_rep = 100
+window_size = 100000
+if len(sys.argv) > 1: 
+	num_rep = int(sys.argv[1]) # take some command line arguments
+if len(sys.argv) > 2:
+	window_size = int(sys.argv[2]) # take some command line arguments
+N_admix = neanderthal_admixture_model(window_size = window_size, num_rep = num_rep)
