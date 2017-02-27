@@ -11,11 +11,10 @@ import sys
 #rho 1.0e-8 bp/gen
 #split time 12000 gen
 #f 0.03
-#f time 100-2500 gen
-		
-#TODO: loop to automate between windows and replicates
-		
-def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_time=900,mix_time=1000,split_time=12000,f=0.03,Ne0=10000,Ne1=2500,mu=1.5e-8,rho=1.0e-8,length=10000000,window_size = 1000000,num_SNP = 1,num_rep=100,coverage=False):
+#f time 100-2500 gen		
+
+#TODO push f back
+def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_time=900,mix_time=2000,split_time=12000,f=0.03,Ne0=10000,Ne1=2500,mu=1.5e-8,rho=1.0e-8,length=10000000,window_size = 1000000,num_SNP = 1,num_rep=100,coverage=False):
 	#when is best time to sample Neanderthal? 100 gen before f?
 	#error catching, leave there for now
 	if f < 0 or f > 1:
@@ -30,8 +29,6 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	win = []
 	freq = []
 	leng = []
-	#FYI mean fragment length from test_2 model ~6000 bp
-	sim_num = 0	#TODO remove this
 	windows = [0]*(length/window_size)
 	for sim in sims:
 		cur_win = 1
