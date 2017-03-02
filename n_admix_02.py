@@ -16,7 +16,7 @@ import sys
 		
 #TODO: loop to automate between windows and replicates
 		
-def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_time=900,mix_time1=2000,mix_time2=1000,split_time=120000,f1=0.02,f2=0.01,Ne0=10000,Ne1=2500,mu=1.5e-8,rho=1.0e-8,length=10000000,window_size = 1000000,num_SNP = 1,num_rep=100,coverage=False):
+def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_time=900,mix_time1=2000,mix_time2=1000,split_time=120000,f1=0.02,f2=0.01,Ne0=10000,Ne1=2500,mu=1.5e-8,rho=1.0e-8,length=10000000,window_size = 1000000,num_SNP = 1,num_rep=200,coverage=False):
 	#when is best time to sample Neanderthal? 100 gen before f?
 	#error catching, leave there for now
 	if f < 0 or f > 1:
