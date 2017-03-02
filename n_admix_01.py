@@ -57,7 +57,7 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 				cur_win += 1
 				cur_site = (cur_start+cur_end)/2.0 #random.randint(cur_start,cur_end)
 				#print cur_start, cur_end, cur_site
-	outfile = open('outfile.txt', 'w')
+	outfile = open('outfile_s.txt', 'w')
 	outfile.write("window\tfrequency\tlength")
 	outfile.write('\n')
 	for line in range(0,len(leng)):
@@ -70,10 +70,10 @@ def neanderthal_admixture_model(num_modern=1000,anc_pop = 1, anc_num = 1, anc_ti
 	outfile.close()
 	return np.array(win), np.array(freq), np.array(leng)
 
-num_rep = 100
+num_rep = 1000
 window_size = 100000
 if len(sys.argv) > 1: 
 	num_rep = int(sys.argv[1]) # take some command line arguments
 if len(sys.argv) > 2:
 	window_size = int(sys.argv[2]) # take some command line arguments
-N_admix = neanderthal_admixture_model(window_size = window_size, num_rep = num_rep)
+N_admix = neanderthal_admixture_model(window_size = window_size, num_rep = num_rep, num_modern = 100)
