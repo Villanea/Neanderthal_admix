@@ -26,10 +26,10 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_pop = 2, anc_num = 1, 
 	samples.extend([msp.Sample(population=1,time=0)]*num_as)
 	samples.extend([msp.Sample(population=anc_pop,time=anc_time)]*(anc_num)) #sample 1 Neanderthal for comparison
 	pop_config = [msp.PopulationConfiguration(initial_size=Ne0),msp.PopulationConfiguration(initial_size=Ne0),msp.PopulationConfiguration(initial_size=Ne1)]
-	divergence = [msp.MassMigration(time=mix_time2,source=1,destination=2,proportion = f2),
-			msp.MassMigration(time=split_time_2,source=0,destination=1,proportion=1.0),
-			msp.MassMigration(time=mix_time1,source=0,destination=2,proportion = f1),
-			msp.MassMigration(time=split_time_1,source=0,destination=2,proportion=1.0)] #do Neanderthals exchange into pop 1 then pop 1 into 2? or should Neanderthal exchange with both pops?
+	divergence = [msp.MassMigration(time=mix_time2,source=1,destination=2,proportion = f2), #second pulse
+			msp.MassMigration(time=split_time_2,source=0,destination=1,proportion=1.0), #EU AS split
+			msp.MassMigration(time=mix_time1,source=0,destination=2,proportion = f1), #first pulse
+			msp.MassMigration(time=split_time_1,source=0,destination=2,proportion=1.0)] # Neand EU split. Do Neanderthals exchange into pop 1 then pop 1 into 2? or should Neanderthal exchange with both pops?
 	sims = msp.simulate(samples=samples,Ne=Ne0,population_configurations=pop_config,demographic_events=divergence,mutation_rate=mu,recombination_rate=rho,length=length,num_replicates=num_rep)
 	print "done simulating"
 	win = []
