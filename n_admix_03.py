@@ -31,15 +31,19 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_pop = 2, anc_num = 1, 
 			msp.MassMigration(time=mix_time1,source=0,destination=2,proportion = f1),
 			msp.MassMigration(time=split_time_1,source=0,destination=2,proportion=1.0)] #do Neanderthals exchange into pop 1 then pop 1 into 2? or should Neanderthal exchange with both pops?
 	sims = msp.simulate(samples=samples,Ne=Ne0,population_configurations=pop_config,demographic_events=divergence,mutation_rate=mu,recombination_rate=rho,length=length,num_replicates=num_rep)
+	print "done simulating"
 	win = []
 	freq_EU = []
 	freq_AS = []
 	leng = []
+	cur_sim = 0
 	for sim in sims:
 		cur_win = 1
 		cur_start = 0
 		cur_end = window_size-1
 		cur_site = (cur_start+cur_end)/2.0 #random.randint(cur_start,cur_end)
+		cur_sim += 1
+		print cur_sim
 		for tree in sim.trees():
 			F_int = tree.get_interval()
 			if cur_site >= F_int[0] and cur_site < F_int[1]:
