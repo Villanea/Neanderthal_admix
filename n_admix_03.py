@@ -27,7 +27,7 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_pop = 2, anc_num = 1, 
 	samples.extend([msp.Sample(population=anc_pop,time=anc_time)]*(anc_num)) #sample 1 Neanderthal for comparison
 	pop_config = [msp.PopulationConfiguration(initial_size=Ne0),msp.PopulationConfiguration(initial_size=Ne0),msp.PopulationConfiguration(initial_size=Ne1)]
 	divergence = [msp.MassMigration(time=mix_time2,source=1,destination=2,proportion = f2),
-			msp.MassMigration(time=split_time_2,source=0,destination=1,proportion=1.0)],
+			msp.MassMigration(time=split_time_2,source=0,destination=1,proportion=1.0),
 			msp.MassMigration(time=mix_time1,source=0,destination=2,proportion = f1),
 			msp.MassMigration(time=split_time_1,source=0,destination=2,proportion=1.0)]
 	sims = msp.simulate(samples=samples,Ne=Ne0,population_configurations=pop_config,demographic_events=divergence,mutation_rate=mu,recombination_rate=rho,length=length,num_replicates=num_rep)
@@ -52,10 +52,10 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_pop = 2, anc_num = 1, 
 				F_length = tree.get_length()
 				N_freq_EU = 0
 				N_freq_AS = 0
-				for leaf in tree.leaves(cur_node)
-					if tree.get_population(leaf) = 0
+				for leaf in tree.leaves(cur_node):
+					if tree.get_population(leaf)== 0:
 						N_freq_EU += 1
-					elif tree.get_population(cur_node) = 1
+					elif tree.get_population(cur_node) == 1:
 						N_freq_AS += 1
 				win.append(cur_win)
 				freq_EU.append(N_freq_EU)
@@ -68,18 +68,20 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_pop = 2, anc_num = 1, 
 				cur_win += 1
 				cur_site = (cur_start+cur_end)/2.0 #random.randint(cur_start,cur_end)
 				#print cur_start, cur_end, cur_site
-	outfile = open('outfile_t.txt', 'w')
-	outfile.write("window\tfrequency\tlength")
+	outfile = open('outfile_ea.txt', 'w')
+	outfile.write("window\tfrequency_EU\tfrequency_AS\tlength")
 	outfile.write('\n')
 	for line in range(0,len(leng)):
 		outfile.write(str(win[line]))
 		outfile.write('\t')
-		outfile.write(str(freq[line]))
+		outfile.write(str(freq_EU[line]))
+		outfile.write('\t')
+		outfile.write(str(freq_AS[line]))
 		outfile.write('\t')
 		outfile.write(str(leng[line]))
 		outfile.write('\n')
 	outfile.close()
-	return np.array(win), np.array(freq), np.array(leng)
+	return np.array(win), np.array(freq_EU), np.array(freq_AS), np.array(leng)
 
 num_rep = 10
 window_size = 100000
