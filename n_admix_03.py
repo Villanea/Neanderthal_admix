@@ -15,7 +15,7 @@ import sys
 #f2 0.01
 #f1 time 2000 gen
 #f2 time 1000 gen
-#eu=european pop, as=asian pop		
+#eu=european pop 0, as=asian pop 1		
 
 		
 def neanderthal_admixture_model(num_eu=100,num_as=100,anc_pop = 2, anc_num = 1, anc_time=900,mix_time1=2000,mix_time2=1000,split_time_1=120000,split_time_2=1500,f1=0.02,f2=0.01,Ne0=10000,Ne1=2500,mu=1.5e-8,rho=1.0e-8,length=10000000,window_size = 1000000,num_SNP = 1,num_rep=100,coverage=False): #when is best time to sample Neanderthal? 100 gen before f?
@@ -29,7 +29,7 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_pop = 2, anc_num = 1, 
 	divergence = [msp.MassMigration(time=mix_time2,source=1,destination=2,proportion = f2),
 			msp.MassMigration(time=split_time_2,source=0,destination=1,proportion=1.0),
 			msp.MassMigration(time=mix_time1,source=0,destination=2,proportion = f1),
-			msp.MassMigration(time=split_time_1,source=0,destination=2,proportion=1.0)]
+			msp.MassMigration(time=split_time_1,source=0,destination=2,proportion=1.0)] #do Neanderthals exchange into pop 1 then pop 1 into 2? or should Neanderthal exchange with both pops?
 	sims = msp.simulate(samples=samples,Ne=Ne0,population_configurations=pop_config,demographic_events=divergence,mutation_rate=mu,recombination_rate=rho,length=length,num_replicates=num_rep)
 	win = []
 	freq_EU = []
@@ -40,11 +40,9 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_pop = 2, anc_num = 1, 
 		cur_start = 0
 		cur_end = window_size-1
 		cur_site = (cur_start+cur_end)/2.0 #random.randint(cur_start,cur_end)
-		#print cur_start, cur_end, cur_site
 		for tree in sim.trees():
 			F_int = tree.get_interval()
 			if cur_site >= F_int[0] and cur_site < F_int[1]:
-				#print cur_site, F_int
 				#raw_input()
 				cur_node = len(samples)-1  #the very last leaf, when adding more modern pops make sure Neanderthal is still last
 				while tree.get_time(tree.get_parent(cur_node)) < split_time:
@@ -55,7 +53,7 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_pop = 2, anc_num = 1, 
 				for leaf in tree.leaves(cur_node):
 					if tree.get_population(leaf)== 0:
 						N_freq_EU += 1
-					elif tree.get_population(cur_node) == 1:
+					elif tree.get_population(leaf) == 1:
 						N_freq_AS += 1
 				win.append(cur_win)
 				freq_EU.append(N_freq_EU)
@@ -66,8 +64,8 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_pop = 2, anc_num = 1, 
 				if cur_end > length:
 					break
 				cur_win += 1
+				print cur_win
 				cur_site = (cur_start+cur_end)/2.0 #random.randint(cur_start,cur_end)
-				#print cur_start, cur_end, cur_site
 	outfile = open('outfile_ea.txt', 'w')
 	outfile.write("window\tfrequency_EU\tfrequency_AS\tlength")
 	outfile.write('\n')
@@ -83,7 +81,7 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_pop = 2, anc_num = 1, 
 	outfile.close()
 	return np.array(win), np.array(freq_EU), np.array(freq_AS), np.array(leng)
 
-num_rep = 10
+num_rep = 1
 window_size = 100000
 if len(sys.argv) > 1: 
 	num_rep = int(sys.argv[1]) # take some command line arguments
