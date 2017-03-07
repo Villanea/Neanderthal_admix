@@ -43,6 +43,7 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_pop = 2, anc_num = 1, 
 		cur_end = window_size-1
 		cur_site = (cur_start+cur_end)/2.0 #random.randint(cur_start,cur_end)
 		cur_sim += 1
+		print "current simulation"
 		print cur_sim
 		for tree in sim.trees():
 			F_int = tree.get_interval()
@@ -59,6 +60,8 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_pop = 2, anc_num = 1, 
 						N_freq_EU += 1
 					elif tree.get_population(leaf) == 1:
 						N_freq_AS += 1
+					else:
+						break
 				win.append(cur_win)
 				freq_EU.append(N_freq_EU)
 				freq_AS.append(N_freq_AS)
