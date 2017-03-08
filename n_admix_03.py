@@ -24,7 +24,7 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_num = 1, anc_time=900,
 		return None
 	samples = [msp.Sample(population=0,time=0)]*num_eu
 	samples.extend([msp.Sample(population=1,time=0)]*num_as)
-	samples.extend([msp.Sample(population=anc_pop,time=anc_time)]*(anc_num)) #sample 1 Neanderthal for comparison
+	samples.extend([msp.Sample(population=2,time=anc_time)]*(anc_num)) #sample 1 Neanderthal for comparison
 	pop_config = [msp.PopulationConfiguration(initial_size=Ne0),msp.PopulationConfiguration(initial_size=Ne0),msp.PopulationConfiguration(initial_size=Ne1)]
 	divergence = [msp.MassMigration(time=mix_time2,source=1,destination=2,proportion = f2), #second pulse
 			msp.MassMigration(time=split_time_2,source=0,destination=1,proportion=1.0), #EU AS split
@@ -50,7 +50,7 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_num = 1, anc_time=900,
 			if cur_site >= F_int[0] and cur_site < F_int[1]:
 				#raw_input()
 				cur_node = len(samples)-1  #the very last leaf, when adding more modern pops make sure Neanderthal is still last
-				while tree.get_time(tree.get_parent(cur_node)) < split_time:
+				while tree.get_time(tree.get_parent(cur_node)) < split_time_1:
 					cur_node = tree.get_parent(cur_node)
 				F_length = tree.get_length()
 				N_freq_EU = 0
