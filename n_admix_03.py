@@ -86,7 +86,7 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_num = 1, anc_time=900,
 	outfile.close()
 	return np.array(win), np.array(freq_EU), np.array(freq_AS), np.array(leng)
 
-num_rep = 1
+num_rep = 1000
 window_size = 100000
 if len(sys.argv) > 1: 
 	num_rep = int(sys.argv[1]) # take some command line arguments
