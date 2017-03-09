@@ -69,7 +69,7 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,anc_num = 1, anc_time=900,
 				if cur_end > length:
 					break
 				cur_win += 1
-				print cur_win
+				#print cur_win
 				cur_site = (cur_start+cur_end)/2.0 #random.randint(cur_start,cur_end)
 	outfile = open('outfile_ea.txt', 'w')
 	outfile.write("window\tfrequency_EU\tfrequency_AS\tlength")
