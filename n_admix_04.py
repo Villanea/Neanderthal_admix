@@ -94,4 +94,4 @@ if len(sys.argv) > 1:
 	num_rep = int(sys.argv[1]) # take some command line arguments
 if len(sys.argv) > 2:
 	window_size = int(sys.argv[2]) # take some command line arguments
-N_admix = neanderthal_admixture_model(window_size = window_size, num_rep = num_rep,f2=0)
+N_admix = neanderthal_admixture_model(window_size = window_size, num_rep = num_rep)
