@@ -17,21 +17,21 @@ import sys
 #f2 0.01
 #f1 time 2000 gen
 #f2 time 1000 gen
-#eu=european pop 1, as=asian pop 2, ba=basaleur pop 0, neand pop 3		
+#eu=european pop 0, as=asian pop 1, ba=basaleur pop 2, neand pop 3		
 
 		
 def neanderthal_admixture_model(num_eu=100,num_as=100,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.03,f2=0.01,Ne0=10000,Ne1=2500,mu=1.5e-8,rho=1.0e-8,length=10000000,window_size = 1000000,num_SNP = 1,num_rep=1000,coverage=False): #when is best time to sample Neanderthal? 100 gen before f?
-	if f1 < 0 or f1 > 1 or f3 < 0 or f3 > 1: #error catching, leave there for now
+	if f1 < 0 or f1 > 1 or f2 < 0 or f2 > 1: #error catching, leave there for now
 		print "Admixture fraction is not in [0,1]"
 		return None
-	samples = [msp.Sample(population=1,time=0)]*num_eu
-	samples.extend([msp.Sample(population=2,time=0)]*num_as) #no sampling of Basal Eurasian pop
+	samples = [msp.Sample(population=0,time=0)]*num_eu
+	samples.extend([msp.Sample(population=1,time=0)]*num_as) #no sampling of Basal Eurasian pop
 	samples.extend([msp.Sample(population=3,time=anc_time)]*(num_nean)) #sample 1 Neanderthal for comparison
 	pop_config = [msp.PopulationConfiguration(initial_size=Ne0),msp.PopulationConfiguration(initial_size=Ne0),msp.PopulationConfiguration(initial_size=Ne0),msp.PopulationConfiguration(initial_size=Ne1)]
-	divergence = [msp.MassMigration(time=mix_time2,source=0,destination=1,proportion = f2), #BE dilution into EU
-			msp.MassMigration(time=split_time_3,source=1,destination=2,proportion=1.0), #EU AS split
-			msp.MassMigration(time=mix_time1,source=2,destination=3,proportion = f1), #first pulse
-			msp.MassMigration(time=split_time_2,source=0,destination=2,proportion=1.0), #BE AS split
+	divergence = [msp.MassMigration(time=mix_time2,source=0,destination=2,proportion = f2), #BE dilution into EU
+			msp.MassMigration(time=split_time_3,source=0,destination=1,proportion=1.0), #EU AS split
+			msp.MassMigration(time=mix_time1,source=1,destination=3,proportion = f1), #first pulse
+			msp.MassMigration(time=split_time_2,source=1,destination=2,proportion=1.0), #BE AS split
 			msp.MassMigration(time=split_time_1,source=2,destination=3,proportion=1.0)] # Neand AS split
 	sims = msp.simulate(samples=samples,Ne=Ne0,population_configurations=pop_config,demographic_events=divergence,mutation_rate=mu,recombination_rate=rho,length=length,num_replicates=num_rep)
 	print "done simulating"
@@ -89,7 +89,7 @@ def neanderthal_admixture_model(num_eu=100,num_as=100,num_nean = 1,anc_time=900,
 	outfile.close()
 	return np.array(win), np.array(freq_EU), np.array(freq_AS), np.array(leng)
 
-num_rep = 1
+num_rep = 1000
 window_size = 100000
 if len(sys.argv) > 1: 
 	num_rep = int(sys.argv[1]) # take some command line arguments
