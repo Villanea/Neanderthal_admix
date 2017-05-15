@@ -17,12 +17,12 @@ head.append('position')
 for filename in sorted(glob.glob('%s%s' %(path,'*.pos'))):
         data_file = open('%s' %(filename),"r")
 cur_pos = re.split('\n', data_file.read())
-cur_pos = np.array(cur_pos)
+cur_pos = np.array(cur_pos[:-1], dtype=np.float64)
 cur_pos = np.reshape(cur_pos,(len(cur_pos),1))
 #print cur_pos
 
 end_pos = cur_pos
-end_pos = end_pos.astype(np.float)
+#end_pos = end_pos.astype(np.float)
 end_pos = end_pos + 1
 
 #populate the chromosome list
