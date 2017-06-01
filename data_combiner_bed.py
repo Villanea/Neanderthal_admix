@@ -26,8 +26,10 @@ end_pos = cur_pos
 end_pos = end_pos + 1
 
 #populate the chromosome list
-data = np.full((len(cur_pos),1),'chr%s' %(chr))
-
+data = np.full((len(cur_pos),1),'chr%s' %(chr),dtype=np.chararray)
+print len(data)
+print len(cur_pos)
+print len(end_pos)
 #append position column
 data = np.hstack((data,cur_pos))
 
@@ -41,7 +43,7 @@ for filename in sorted(glob.glob('%s%s' %(path,'*.filtered'))):
         head.append(name)
         data_file = open('%s' %(filename),"r")
         ind = re.split('\n', data_file.read())
-        ind = np.array(ind)
+        ind = np.array(ind[:-1])
         ind = np.reshape(ind,(len(ind),1))
         data = np.hstack((data,ind))
 
