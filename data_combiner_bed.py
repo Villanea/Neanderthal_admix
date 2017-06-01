@@ -3,9 +3,9 @@ import re
 import numpy as np
 import glob
 
-path = '/mnt/md0/villanea/neanderthal_data/CEU_lax/CEU_lax_chr1/'
+path = '/mnt/md0/villanea/neanderthal_data/CEU_lax/CEU_lax_chr22/'
 
-chr=1
+chr=22
 pop='CEU_lax'
 
 #commence the header
@@ -22,14 +22,13 @@ cur_pos = np.reshape(cur_pos,(len(cur_pos),1))
 #print cur_pos
 
 end_pos = cur_pos
-#end_pos = end_pos.astype(np.float)
 end_pos = end_pos + 1
 
 #populate the chromosome list
 data = np.full((len(cur_pos),1),'chr%s' %(chr),dtype=np.chararray)
-print len(data)
-print len(cur_pos)
-print len(end_pos)
+#print len(data)
+#print len(cur_pos)
+#print len(end_pos)
 #append position column
 data = np.hstack((data,cur_pos))
 
@@ -45,7 +44,9 @@ for filename in sorted(glob.glob('%s%s' %(path,'*.filtered'))):
         ind = re.split('\n', data_file.read())
         ind = np.array(ind[:-1])
         ind = np.reshape(ind,(len(ind),1))
+	#print len(ind)
         data = np.hstack((data,ind))
+	print data
 
 #Write the array line by line, header first
 outfile = open('%s_chr%s_out_bed' %(pop,chr), 'w')
