@@ -53,6 +53,13 @@ outfile = open('%s_chr%s_out_bed' %(pop,chr), 'w')
 outfile.write('\t'.join(head))
 outfile.write('\n')
 for line in range(0,(len(data)-1)):
-        outfile.write('\t'.join(data[line]))
+        outfile.write('\t'.join(map(str,data[line])))
         outfile.write('\n')
 outfile.close()
+
+
+
+
+
+
+
