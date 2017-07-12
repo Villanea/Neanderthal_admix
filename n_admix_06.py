@@ -27,6 +27,7 @@ import sys
 
 #TOD: simulate len chromosomes in genome
 #TODO: fit admixture maps
+#Sooooo do I make 3000 MB sims?
 #Do we need to record fragment length anymore?
 
 		
