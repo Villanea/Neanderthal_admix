@@ -25,17 +25,15 @@ import sys
 #f4 time 1000 gen
 #eu=european pop 0, as=asian pop 1, ba=basaleur pop 2, neand pop 3		
 
-#TOD: simulate len chromosomes in genome
+#TODO: simulate len chromosomes in genome
 #TODO: fit admixture maps
-#Sooooo do I make 3000 MB sims?
+#TODO: mask positions
 #Do we need to record fragment length anymore?
 
 		
 def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.00,Ne0=10000,Ne1=2500,Ne2=10000,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False):
-	infile = "chr1_map"
+	infile = "/mnt/md0/villanea/MSprime/chr1_map8.txt"
 	rho_map = msp.RecombinationMap.read_hapmap(infile)
-	#positions = np.array(rho_map.get_positions()[1:])
-	#rates = np.array(rho_map.get_rates()[1:])
 	samples = [msp.Sample(population=0,time=0)]*num_eu
 	samples.extend([msp.Sample(population=1,time=0)]*num_as) #no sampling of Basal Eurasian pop
 	samples.extend([msp.Sample(population=3,time=anc_time)]*(num_nean)) #sample 1 Neanderthal for comparison
@@ -47,25 +45,25 @@ def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,
 			msp.MassMigration(time=mix_time1,source=1,destination=3,proportion = f1), #first pulse
 			msp.MassMigration(time=split_time_2,source=1,destination=2,proportion=1.0), #BE AS split
 			msp.MassMigration(time=split_time_1,source=3,destination=2,proportion=1.0)] # Neand AS split
-	sims = msp.simulate(samples=samples,Ne=Ne0,population_configurations=pop_config,demographic_events=divergence,mutation_rate=mu,recombination_map=rhomap,recombination_rate=NONE,length=NONE,num_replicates=num_rep)
+	sims = msp.simulate(samples=samples,Ne=Ne0,population_configurations=pop_config,demographic_events=divergence,mutation_rate=mu,recombination_map=rho_map,recombination_rate=None,length=None,num_replicates=num_rep)
 	print "done simulating"
 	win = []
 	freq_EU = []
 	freq_AS = []
+	last = np.array(rho_map.get_positions()[-1])
 	#leng = []
 	cur_sim = 0
 	for sim in sims:
 		cur_win = 1
 		cur_start = 0
 		cur_end = window_size-1
-		cur_site = (cur_start+cur_end)/2.0 #random.randint(cur_start,cur_end)
+		cur_site = (cur_start+cur_end)/2.0
 		cur_sim += 1
 		print "current simulation"
 		print cur_sim
 		for tree in sim.trees():
 			F_int = tree.get_interval()
 			if cur_site >= F_int[0] and cur_site < F_int[1]:
-				#raw_input()
 				cur_node = len(samples)-1  #the very last leaf, when adding more modern pops make sure Neanderthal is still last
 				while tree.get_time(tree.get_parent(cur_node)) < split_time_1:
 					cur_node = tree.get_parent(cur_node)
@@ -83,15 +81,17 @@ def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,
 				#leng.append(F_length)
 				cur_start += window_size
 				cur_end += window_size
-				if cur_end > length:
+				print cur_end
+				print last
+				if cur_end > last:
 					break
 				cur_win += 1
-				#print cur_win
+				print cur_win
 				cur_site = (cur_start+cur_end)/2.0 #random.randint(cur_start,cur_end)
 	outfile = open('outfile_map_chr1_1f.txt', 'w')
 	outfile.write("window\tfrequency_EU\tfrequency_AS")
 	outfile.write('\n')
-	for line in range(0,len(leng)):
+	for line in range(0,len(freq_AS)):
 		outfile.write(str(win[line]))
 		outfile.write('\t')
 		outfile.write(str(freq_EU[line]))
@@ -101,7 +101,7 @@ def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,
 		#outfile.write(str(leng[line]))
 		#outfile.write('\n')
 	outfile.close()
-	return np.array(win), np.array(freq_EU), np.array(freq_AS), np.array(leng)
+	return np.array(win), np.array(freq_EU), np.array(freq_AS)#, np.array(leng)
 
 num_rep = 1
 window_size = 100000
