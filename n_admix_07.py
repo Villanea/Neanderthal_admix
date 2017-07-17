@@ -29,11 +29,13 @@ import sys
 #TODO: fit admixture maps
 #TODO: output in bed format
 
-outfile = open('outfile_map_chr1n2_dil.txt', 'w')
+outfile = open('outfile_map_wholegen_dil.txt', 'w+')
 outfile.write("window\tfrequency_EU\tfrequency_AS")
 outfile.write('\n')
-for chr in range(1,2):		
-	def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.10,Ne0=10000,Ne1=2500,Ne2=10000,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False):
+outfile.close()
+for chr in range(1,3):
+	print chr		
+	def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.25,Ne0=10000,Ne1=2500,Ne2=10000,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False):
 		infile = "/mnt/md0/villanea/MSprime/chr%s_map" %(chr)
 		rho_map = msp.RecombinationMap.read_hapmap(infile)
 		samples = [msp.Sample(population=0,time=0)]*num_eu
@@ -92,14 +94,7 @@ for chr in range(1,2):
 					print cur_win
 					cur_site = (cur_start+cur_end)/2.0 #random.randint(cur_start,cur_end)
 					print cur_site
-
-					#if cur site inside F_int, add to window and loop inside this tree
-					#if cur site outside, break to next tree. Keep window progression so it doesn't loop over every one every time
-					#add mechanism to bump up cur_site while inside the same tree
-
-
-
-		
+		outfile = open('outfile_map_wholegen_dil.txt', 'a')
 		for line in range(0,len(freq_AS)):
 			outfile.write(str(win[line]))
 			outfile.write('\t')
@@ -109,8 +104,8 @@ for chr in range(1,2):
 			outfile.write('\n')
 			#outfile.write(str(leng[line]))
 			#outfile.write('\n')
-outfile.close()
-return np.array(win), np.array(freq_EU), np.array(freq_AS)#, np.array(leng)
+		outfile.close()
+		return np.array(win), np.array(freq_EU), np.array(freq_AS)#, np.array(leng)
 
 num_rep = 1
 window_size = 100000
