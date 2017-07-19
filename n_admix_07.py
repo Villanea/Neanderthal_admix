@@ -34,7 +34,7 @@ outfile.write("window\tfrequency_EU\tfrequency_AS")
 outfile.write('\n')
 outfile.close()
 def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.25,Ne0=10000,Ne1=2500,Ne2=10000,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False):
-	for chr in range(1,3):
+	for chr in range(1,23):
 		infile = "/mnt/md0/villanea/MSprime/chr%s_map" %(chr)
 		rho_map = msp.RecombinationMap.read_hapmap(infile)
 		samples = [msp.Sample(population=0,time=0)]*num_eu
