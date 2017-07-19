@@ -18,20 +18,18 @@ import sys
 #f1 0.02 - original neanderthal pulse
 #f2 0.01 - second pulse to east asia
 #f3 0.01 - second pulse to europe
-#f4 0.10 - dilution pulse to europe
+#f4 0.20 - dilution pulse to europe
 #f1 time 2000 gen
 #f2 time 1000 gen
 #f3 time 1000 gen
 #f4 time 1000 gen
 #eu=european pop 0, as=asian pop 1, ba=basaleur pop 2, neand pop 3		
 
-#TODO: simulate len chromosomes in genome
-#TODO: fit admixture maps
 #TODO: output in bed format
 
-outfile = open('outfile_map_wholegen_dil.txt', 'w+')
-outfile.write("window\tfrequency_EU\tfrequency_AS")
-outfile.write('\n')
+outfile = open('outfile_map_wholegen_dil.bed', 'w+')
+#outfile.write("window\tfrequency_EU\tfrequency_AS")
+#outfile.write('\n')
 outfile.close()
 def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.25,Ne0=10000,Ne1=2500,Ne2=10000,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False):
 	for chr in range(1,23):
@@ -49,8 +47,10 @@ def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,
 				msp.MassMigration(time=split_time_2,source=1,destination=2,proportion=1.0), #BE AS split
 				msp.MassMigration(time=split_time_1,source=3,destination=2,proportion=1.0)] # Neand AS split
 		sims = msp.simulate(samples=samples,Ne=Ne0,population_configurations=pop_config,demographic_events=divergence,mutation_rate=mu,recombination_map=rho_map,num_replicates=num_rep)
-		print "done simulating"
-		win = []
+		chrom = "chr%s" %(chr)
+		#win = []
+		pos = []
+		pos1 = []
 		freq_EU = []
 		freq_AS = []
 		last = np.array(rho_map.get_positions()[-1])
@@ -62,11 +62,8 @@ def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,
 			cur_end = window_size-1
 			cur_site = (cur_start+cur_end)/2.0
 			cur_sim += 1
-			print "current simulation"
-			print cur_sim
 			for tree in sim.trees():
 				F_int = tree.get_interval()
-				#print F_int
 				while cur_site >= F_int[0] and cur_site < F_int[1]:
 					cur_node = len(samples)-1  #the very last leaf, when adding more modern pops make sure Neanderthal is still last
 					while tree.get_time(tree.get_parent(cur_node)) < split_time_1:
@@ -79,7 +76,9 @@ def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,
 							N_freq_EU += 1
 						elif tree.get_population(leaf) == 1:
 							N_freq_AS += 1
-					win.append(cur_win)
+					#win.append(cur_win)
+					pos.append(cur_site)
+					pos1.append(cur_site+1)
 					freq_EU.append(N_freq_EU)
 					freq_AS.append(N_freq_AS)
 					#leng.append(F_length)
@@ -93,9 +92,13 @@ def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,
 					print cur_win
 					cur_site = (cur_start+cur_end)/2.0 #random.randint(cur_start,cur_end)
 					print cur_site
-		outfile = open('outfile_map_wholegen_dil.txt', 'a')
+		outfile = open('outfile_map_wholegen_dil.bed', 'a')
 		for line in range(0,len(freq_AS)):
-			outfile.write(str(win[line]))
+			outfile.write(str(chrom[line]))
+			outfile.write('\t')
+			outfile.write(str(pos[line]))
+			outfile.write('\t')
+			outfile.write(str(pos1[line]))
 			outfile.write('\t')
 			outfile.write(str(freq_EU[line]))
 			outfile.write('\t')
@@ -104,7 +107,7 @@ def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,
 			#outfile.write(str(leng[line]))
 			#outfile.write('\n')
 		outfile.close()
-	return np.array(win), np.array(freq_EU), np.array(freq_AS)#, np.array(leng)
+	return np.array(pos), np.array(pos1), np.array(freq_EU), np.array(freq_AS)#, np.array(leng)
 
 num_rep = 1
 window_size = 100000
