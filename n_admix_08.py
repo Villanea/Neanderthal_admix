@@ -60,7 +60,7 @@ def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,
 			cur_win = 1
 			cur_start = 0
 			cur_end = window_size-1
-			cur_site = (cur_start+cur_end)/2.0
+			cur_site = ((cur_start+cur_end)+1)/2.0
 			cur_sim += 1
 			for tree in sim.trees():
 				F_int = tree.get_interval()
@@ -94,7 +94,7 @@ def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,
 					print cur_site
 		outfile = open('outfile_map_wholegen_dil.bed', 'a')
 		for line in range(0,len(freq_AS)):
-			outfile.write(str(chrom[line]))
+			outfile.write(chrom)
 			outfile.write('\t')
 			outfile.write(str(pos[line]))
 			outfile.write('\t')
