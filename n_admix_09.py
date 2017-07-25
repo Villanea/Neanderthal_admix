@@ -1,7 +1,7 @@
 import msprime as msp
 import numpy as np
 import random
-
+import os
 import sys
 
 #One Model to rule them all, One Model to find them, One Model to bring them all and in the darkness bind them
