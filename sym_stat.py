@@ -1,5 +1,7 @@
 import numpy as np
 from scipy import special
+from numpy import log
+from scipy.special import betaln
 
 #def symmetry_stat():
 EU = np.genfromtxt('outfile_map_wholegen_dil_masked.bed', usecols=3)
@@ -18,7 +20,8 @@ for i in range(0,len(AS)):
 
 #project down to 100 by 100 matrix
 def lchoose(N, k):
-      return special.gammaln(N+1) - special.gammaln(N-k+1) - special.gammaln(k+1)
+    # return -betaln(1 + int(N) - k, 1 + k) - log(int(N) + 1)
+	return special.gammaln(N+1) - special.gammaln(N-k+1) - special.gammaln(k+1)
 
 def project_down(d,m):
 	n = len(d)-1 #check if because matrix dimensions are 170+1, 394+1
@@ -26,11 +29,27 @@ def project_down(d,m):
 	res = np.zeros(m)#initializes res array? check:numeric(m+1), is +1 bc R is 1 offset?
 	for i in range(0,m):
 		res[i] = np.sum(d*np.exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m))) #check this line: res[i+1] = sum(d*exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m)))
-	return n,l,res
+	return res
 
-test = project_down(EU_AS[3],100)
-print test
-#print EU_AS
-	#return EU, AS
+EU_AS_d = np.zeros((101, 395))
+for i in range(0,393):
+	EU_AS_d[i,:] = project_down(EU_AS[:,i],100)
+
+EU_AS_pd = np.zeros((101, 395))
+for i in range(0,100):
+	EU_AS_pd[i,:] = project_down(EU_AS_d[i,:],100)
+
+EU_AS_pd[0,0] = 0
+
+#calculate and write symmetry stat
+sym_stat = []
+for i in range(0,100):
+	sym_stat = c(sym_stat, np.sum((EU_AS_pd[i,:] - EU_AS_pd[:,i]))/np.sum((EU_AS_pd[i,:] + EU_AS_pd[:,i]+1)))
+outfile = open('symmetry_stat', 'a')
+outfile.write(sym_stat)
+outfile.write('\n')
+outfile.close()
+#return
+
 
 #Symm = symmetry_stat
