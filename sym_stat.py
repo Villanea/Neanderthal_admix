@@ -1,5 +1,5 @@
 import numpy as np
-from scipy import special
+import scipy.special as sp
 from numpy import log
 from scipy.special import betaln
 
@@ -19,35 +19,37 @@ for i in range(0,len(AS)):
 	EU_AS[(EU_freq), (AS_freq)] = EU_AS[(EU_freq),(AS_freq)]+1
 
 #project down to 100 by 100 matrix
-def lchoose(N, k):
-    # return -betaln(1 + int(N) - k, 1 + k) - log(int(N) + 1)
-	return special.gammaln(N+1) - special.gammaln(N-k+1) - special.gammaln(k+1)
+def lchoose(N,k):
+	#return -betaln(1 + int(N) - k, 1 + k) - log(int(N) + 1)
+	return sp.gammaln(N+1) - sp.gammaln(N-k+1) - sp.gammaln(k+1)
 
+#test = np.exp(lchoose(np.arange(1,100),100))
+#print test
 def project_down(d,m):
 	n = len(d)-1 #check if -1 because matrix dimensions are 170+1, 394+1
-	l = range(0,n)
-	res = np.zeros(m)#initializes res array? check:numeric(m+1), is +1 bc R is 1 offset?
-	for i in range(0,m):
+	l = np.arange(0,n+1)
+	res = np.zeros(m+1)#initializes res array? check:numeric(m+1), is +1 bc R is 1 offset?
+	for i in np.arange(0,m+1):
 		res[i] = np.sum(d*np.exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m))) #check this line: res[i+1] = sum(d*exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m)))
 	return res
 
 EU_AS_d = np.zeros((101, 394))
-for i in range(0,393):
+for i in range(0,394):
 	EU_AS_d[:,i] = project_down(EU_AS[:,i],100)
 
 EU_AS_pd = np.zeros((101, 101))
-for i in range(0,100):
+for i in range(0,101):
 	EU_AS_pd[i,:] = project_down(EU_AS_d[i,:],100)
 
 EU_AS_pd[0,0] = 0
 
 #TODO:calculate and write symmetry stat
 sym_stat = []
-for i in range(0,100):
+for i in range(0,101):
 	stat =  np.sum((EU_AS_pd[i,:] - EU_AS_pd[:,i]))/np.sum((EU_AS_pd[i,:] + EU_AS_pd[:,i]+1))
 	sym_stat.append(stat)
 outfile = open('symmetry_stat', 'a')
-outfile.write(sym_stat)
+outfile.write(str(sym_stat))
 outfile.write('\n')
 outfile.close()
 #return
