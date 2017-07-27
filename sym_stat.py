@@ -5,11 +5,11 @@ from scipy.special import betaln
 
 #def symmetry_stat():
 EU = np.genfromtxt('outfile_map_wholegen_dil_masked.bed', usecols=3)
-EUav = np.mean(EU)/170
-print EUav
+EUav = np.mean(EU)/170 #remove in final version
+print EUav #remove in final version
 AS = np.genfromtxt('outfile_map_wholegen_dil_masked.bed', usecols=4)
-ASav = np.mean(AS)/394
-print ASav
+ASav = np.mean(AS)/394 #remove in final version
+print ASav #remove in final version
 
 #initialize and fill the matrix
 EU_AS = np.zeros((171, 395)) #170+1, 394+1: +1 to include fixed alleles
@@ -24,7 +24,7 @@ def lchoose(N, k):
 	return special.gammaln(N+1) - special.gammaln(N-k+1) - special.gammaln(k+1)
 
 def project_down(d,m):
-	n = len(d)-1 #check if because matrix dimensions are 170+1, 394+1
+	n = len(d)-1 #check if -1 because matrix dimensions are 170+1, 394+1
 	l = range(0,n)
 	res = np.zeros(m)#initializes res array? check:numeric(m+1), is +1 bc R is 1 offset?
 	for i in range(0,m):
@@ -35,13 +35,13 @@ EU_AS_d = np.zeros((101, 395))
 for i in range(0,393):
 	EU_AS_d[i,:] = project_down(EU_AS[:,i],100)
 
-EU_AS_pd = np.zeros((101, 395))
+EU_AS_pd = np.zeros((101, 101))
 for i in range(0,100):
 	EU_AS_pd[i,:] = project_down(EU_AS_d[i,:],100)
 
 EU_AS_pd[0,0] = 0
 
-#calculate and write symmetry stat
+#TODO:calculate and write symmetry stat
 sym_stat = []
 for i in range(0,100):
 	sym_stat = c(sym_stat, np.sum((EU_AS_pd[i,:] - EU_AS_pd[:,i]))/np.sum((EU_AS_pd[i,:] + EU_AS_pd[:,i]+1)))
