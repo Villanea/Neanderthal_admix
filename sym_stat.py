@@ -31,9 +31,9 @@ def project_down(d,m):
 		res[i] = np.sum(d*np.exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m))) #check this line: res[i+1] = sum(d*exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m)))
 	return res
 
-EU_AS_d = np.zeros((101, 395))
+EU_AS_d = np.zeros((101, 394))
 for i in range(0,393):
-	EU_AS_d[i,:] = project_down(EU_AS[:,i],100)
+	EU_AS_d[:,i] = project_down(EU_AS[:,i],100)
 
 EU_AS_pd = np.zeros((101, 101))
 for i in range(0,100):
@@ -44,7 +44,8 @@ EU_AS_pd[0,0] = 0
 #TODO:calculate and write symmetry stat
 sym_stat = []
 for i in range(0,100):
-	sym_stat = c(sym_stat, np.sum((EU_AS_pd[i,:] - EU_AS_pd[:,i]))/np.sum((EU_AS_pd[i,:] + EU_AS_pd[:,i]+1)))
+	stat =  np.sum((EU_AS_pd[i,:] - EU_AS_pd[:,i]))/np.sum((EU_AS_pd[i,:] + EU_AS_pd[:,i]+1))
+	sym_stat.append(stat)
 outfile = open('symmetry_stat', 'a')
 outfile.write(sym_stat)
 outfile.write('\n')
