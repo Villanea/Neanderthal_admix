@@ -32,7 +32,7 @@ import sys
 
 		
 def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.00,Ne0=10000,Ne1=2500,Ne2=10000,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False):
-	infile = "/mnt/md0/villanea/MSprime/chr1_map8.txt"
+	infile = "chr1_map_5000.txt"
 	rho_map = msp.RecombinationMap.read_hapmap(infile)
 	samples = [msp.Sample(population=0,time=0)]*num_eu
 	samples.extend([msp.Sample(population=1,time=0)]*num_as) #no sampling of Basal Eurasian pop
@@ -45,7 +45,7 @@ def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,
 			msp.MassMigration(time=mix_time1,source=1,destination=3,proportion = f1), #first pulse
 			msp.MassMigration(time=split_time_2,source=1,destination=2,proportion=1.0), #BE AS split
 			msp.MassMigration(time=split_time_1,source=3,destination=2,proportion=1.0)] # Neand AS split
-	sims = msp.simulate(samples=samples,Ne=Ne0,population_configurations=pop_config,demographic_events=divergence,mutation_rate=mu,recombination_map=rho_map,recombination_rate=None,length=None,num_replicates=num_rep)
+	sims = msp.simulate(samples=samples,Ne=Ne0,population_configurations=pop_config,demographic_events=divergence,mutation_rate=mu,recombination_map=rho_map,num_replicates=num_rep)
 	print "done simulating"
 	win = []
 	freq_EU = []
@@ -61,8 +61,16 @@ def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,
 		cur_sim += 1
 		print "current simulation"
 		print cur_sim
+		trees = sim.trees()
+		while True:
+			cur_tree = trees.next()
+			F_int = cur_tree.get_interval()
+			print F_int
+			raw_input()
 		for tree in sim.trees():
 			F_int = tree.get_interval()
+			print cur_site, F_int
+			raw_input()
 			if cur_site >= F_int[0] and cur_site < F_int[1]:
 				cur_node = len(samples)-1  #the very last leaf, when adding more modern pops make sure Neanderthal is still last
 				while tree.get_time(tree.get_parent(cur_node)) < split_time_1:

@@ -3,6 +3,7 @@ import numpy as np
 import random
 
 import sys
+import argparse
 
 #One Model to rule them all, One Model to find them, One Model to bring them all and in the darkness bind them
 
@@ -28,6 +29,24 @@ import sys
 #TOD: simulate len chromosomes in genome
 #TODO: fit admixture maps
 #Do we need to record fragment length anymore?
+
+parser = argparse.ArgumentParser("Simulate introgression with various parameters in a simple model of recombination")
+parser.add_argument("-t1", default=12000, type = float, help = "split time of humans and Neandertals, in generations")
+parser.add_argument("-t2", default=2300, type = float, help = "split time of basal Eurasian population")
+parser.add_argument("-t3", default=1500, type = float, help = "split time of East Asians and Europeans")
+parser.add_argument("-f1", default = 0.022, type = float, help = "introgression from Neandertals into ancestor of Europeans and Asiasn")
+parser.add_argument("-f2", default = 0.003, type = float, help = "introgression from Neandertals into just East Asians")
+parser.add_argument("-f3", default = 0.0, type = float, help = "introgression from Neandertals into just Europeans")
+parser.add_argument("-f4", default = 0.0, type = float, help = "dilution from Basal Eurasians into Europeans")
+parser.add_argument("-m1", default = 2000, type = float, help = "time of Neandertal to ancestor of European and Asian admxiture")
+parser.add_argument("-m2", default = 1000, type = float, help = "time of admixture from Neandertal into East Asian")
+parser.add_argument("-m3", default = 1000, type = float, help = "time of admixture from Neandertal into European")
+parser.add_argument("-m4", default = 1000, type = float, help = "time of dilution from Basal Eurasian into European")
+parser.add_argument("-w", default = 100000, type = int, help = "window size for pulling out admixed bases")
+parser.add_argument("-n", default = 1000, type = int, help = "number of replicate simulations to run")
+parser.add_argument("-l", default = 10000000, type = int, help = "length of fragment to simulate")
+
+args = parser.parse_args() 
 
 		
 def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.003,f3=0.00,f4=0.00,Ne0=10000,Ne1=2500,Ne2=10000,mu=1.5e-8,rho=1.0e-8,length=10000000,window_size = 100000,num_SNP = 1,num_rep=1000,coverage=False):
@@ -84,7 +103,7 @@ def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,
 				#print cur_win
 				cur_site = (cur_start+cur_end)/2.0 #random.randint(cur_start,cur_end)
 	outfile = open('outfile_all_2f.txt', 'w')
-	outfile.write("window\tfrequency_EU\tfrequency_AS\tlength")
+	outfile.write("window\tfrequency_EU\tfrequency_AS")
 	outfile.write('\n')
 	for line in range(0,len(leng)):
 		outfile.write(str(win[line]))
@@ -92,16 +111,10 @@ def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,
 		outfile.write(str(freq_EU[line]))
 		outfile.write('\t')
 		outfile.write(str(freq_AS[line]))
-		outfile.write('\t')
+		#outfile.write('\t')
 		#outfile.write(str(leng[line]))
-		#outfile.write('\n')
+		outfile.write('\n')
 	outfile.close()
 	return np.array(win), np.array(freq_EU), np.array(freq_AS), np.array(leng)
 
-num_rep = 1000
-window_size = 100000
-if len(sys.argv) > 1: 
-	num_rep = int(sys.argv[1]) # take some command line arguments
-if len(sys.argv) > 2:
-	window_size = int(sys.argv[2]) # take some command line arguments
-N_admix = neanderthal_admixture_model(window_size = window_size, num_rep = num_rep)
+N_admix = neanderthal_admixture_model(mix_time1=args.m1,mix_time2=args.m2,mix_time3=args.m3,mix_time4=args.m4,split_time_1=args.t1,split_time_2=args.t2,split_time_3=args.t3,f1=args.f1,f2=args.f2,f3=args.f3,f4=args.f4,length=args.l,window_size = args.w,num_rep=args.n)
