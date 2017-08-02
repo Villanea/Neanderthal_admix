@@ -164,10 +164,10 @@ def symmetry_stat():
 	for i in range(0,101):
 		stat =  np.sum((EU_AS_pd[i,:] - EU_AS_pd[:,i]))/np.sum((EU_AS_pd[i,:] + EU_AS_pd[:,i]+1))
 		sym_stat.append(stat)
-	outfile = open('symmetry_stat', 'a')
+	outfile = open('symmetry_stat%s', 'a')
 	outfile.write(str(sym_stat)) #TODO: write as tab delimited file, add the parameters
 	outfile.write('\n')
 	outfile.close()
-return sym_stat
+	return sym_stat
 
 Symm = symmetry_stat
