@@ -43,7 +43,7 @@ for i in range(0,101):
 
 EU_AS_pd[0,0] = 0
 
-#TODO:calculate and write symmetry stat
+#calculate and write symmetry stat
 sym_stat = []
 for i in range(0,101):
 	stat =  np.sum((EU_AS_pd[i,:] - EU_AS_pd[:,i]))/np.sum((EU_AS_pd[i,:] + EU_AS_pd[:,i]+1))
