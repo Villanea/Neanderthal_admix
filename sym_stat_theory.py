@@ -2,6 +2,7 @@ import numpy as np
 from scipy.sparse.linalg import expm_multiply as expma
 import scipy.special as sp
 import scipy.optimize as opt
+import scipy.stats as st
 
 def generate_Q_het(n):
 	Q = np.zeros((n+1,n+1))
@@ -56,28 +57,37 @@ def dilution(f1,t1,f2,t2,n):
 	comb = sp.binom(n,np.arange(0,n+1))
 	return comb*sample
 
-def sym_stat_two_pulse(f1,f2,tp,ta1,ta2,te,n):
+def sym_stat_two_pulse(f1,f2,tp,ta1,ta2,te,n,norm=False):
 	t1AS = tp+ta1
 	t2AS = ta2
 	tEU = tp+te
 	freqEU = one_pulse(f1,tEU,n)
 	freqAS = two_pulse(f1,t1AS,f2,t2AS,n)
+	if norm:
+		freqEU = freqEU[1:]/sum(freqEU[1:])
+		freqAS = freqAS[1:]/sum(freqAS[1:])
 	sym = (freqEU-freqAS)/(freqEU+freqAS+1)
 	print f1,f2,tp,ta1,ta2,te
-	print sym
 	return sym
 
-def sym_stat_dilution(f1,f2,tp,ta,te1,te2,n):
+def sym_stat_dilution(f1,f2,tp,ta,te1,te2,n,norm=False):
 	tAS = tp+ta
 	t1EU = tp+te1
 	t2EU = te2
 	freqEU = dilution(f1,t1EU,f2,t2EU,n)
 	freqAS = one_pulse(f1,tAS,n)	
+	if norm:
+		freqEU = freqEU[1:]/sum(freqEU[1:])
+		freqAS = freqAS[1:]/sum(freqAS[1:])
 	sym = (freqEU-freqAS)/(freqEU+freqAS+1)
+	print f1,f2,tp,ta,te1,te2
 	return sym
 
 #NB: DON'T INCLUDE THE ZERO CATEGORY!!!!
 def fit_two_pulse(dat):
 	n = len(dat)
-	return opt.curve_fit(lambda x, f1,f2,tp,ta1,ta2,te: sym_stat_two_pulse(f1,f2,tp,ta1,ta2,te,n)[1:], 1, dat,bounds=((0,0,0,0,0,0),(1,1,1,1,1,1)))
-	
+	return opt.curve_fit(lambda x, f1,f2,tp,ta1,ta2,te: sym_stat_two_pulse(f1,f2,tp,ta1,ta2,te,n,True), 1, dat, p0 = st.uniform.rvs(size=6), bounds=((0,0,0,0,0,0),(1,1,1,1,1,1)))
+
+def fit_dilution(dat):
+	n = len(dat)
+	return opt.curve_fit(lambda x, f1,f2,tp,ta,te1,te2: sym_stat_dilution(f1,f2,tp,ta,te1,te2,n,True), 1, dat, p0 = st.uniform.rvs(size=6), bounds=((0,0,0,0,0,0),(1,1,1,1,1,1)))
