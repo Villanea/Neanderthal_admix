@@ -1,5 +1,3 @@
-#One Model to rule them all, One Model to find them, One Model to bring them all and in the darkness bind them
-
 import msprime as msp
 import numpy as np
 import random
@@ -9,28 +7,42 @@ import scipy.special as sp
 from numpy import log
 from scipy.special import betaln
 
-#declare which sim for parallelization 
-sim = 1
-
 #Sim parameters from Moorjani et al 2016
 #Ne0 Neanderthal Ne 2500
 #Ne1 Europe Ne 10000
 #Ne2 East Asia Ne 10000
 #mu 1.5e-8 bp/gen
 #rho 1.0e-8 bp/gen
-#split time_1 12000 gen
-#split time_2 2300 gen
-#split time 3 1500 gen
+#t1 split time_1 12000 gen
+#t2 split time_2 2300 gen
+#t3 split time 3 1500 gen
 #f1 0.022 - original neanderthal pulse
 #f2 0.01 - second pulse to east asia
 #f3 0.01 - second pulse to europe
 #f4 0.20 - dilution pulse to europe
-#f1 time 2000 gen
-#f2 time 1000 gen
-#f3 time 1000 gen
-#f4 time 1000 gen
+#m1 f1 time 2000 gen
+#m2 f2 time 1000 gen
+#m3 f3 time 1000 gen
+#m4 f4 time 1000 gen
 #eu=european pop 0, as=asian pop 1, ba=basaleur pop 2, nean pop 3		
 
+parser = argparse.ArgumentParser("Simulate introgression with various parameters in a simple model of recombination")
+parser.add_argument("-sim", default=1, type = float, help = "declares which simulation number for parallelization")
+parser.add_argument("-t1", default=12000, type = float, help = "split time of humans and Neandertals, in generations")
+parser.add_argument("-t2", default=2300, type = float, help = "split time of basal Eurasian population")
+parser.add_argument("-t3", default=1500, type = float, help = "split time of East Asians and Europeans")
+parser.add_argument("-f1", default = 0.022, type = float, help = "introgression from Neandertals into ancestor of Europeans and Asiasn")
+parser.add_argument("-f2", default = 0.01, type = float, help = "introgression from Neandertals into just East Asians")
+parser.add_argument("-f3", default = 0.0, type = float, help = "introgression from Neandertals into just Europeans")
+parser.add_argument("-f4", default = 0.0, type = float, help = "dilution from Basal Eurasians into Europeans")
+parser.add_argument("-m1", default = 2000, type = float, help = "time of Neandertal to ancestor of European and Asian admxiture")
+parser.add_argument("-m2", default = 1000, type = float, help = "time of admixture from Neandertal into East Asian")
+parser.add_argument("-m3", default = 1000, type = float, help = "time of admixture from Neandertal into European")
+parser.add_argument("-m4", default = 1000, type = float, help = "time of dilution from Basal Eurasian into European")
+parser.add_argument("-w", default = 100000, type = int, help = "window size for pulling out admixed bases")
+parser.add_argument("-n", default = 1, type = int, help = "number of replicate simulations to run")
+
+args = parser.parse_args() 
 
 outfile = open('outfile_sim%s.bed' %(sim), 'w+')
 outfile.close()
@@ -105,7 +117,7 @@ def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,
 		outfile.close()
 	return np.array(pos), np.array(pos1), np.array(freq_EU), np.array(freq_AS)
 
-N_admix = neanderthal_admixture_model()
+N_admix = neanderthal_admixture_model(mix_time1=args.m1,mix_time2=args.m2,mix_time3=args.m3,mix_time4=args.m4,split_time_1=args.t1,split_time_2=args.t2,split_time_3=args.t3,f1=args.f1,f2=args.f2,f3=args.f3,f4=args.f4,length=args.l,window_size = args.w,num_rep=args.n)
 
 #flush the memory
 pos.flush()
@@ -113,11 +125,26 @@ pos1.flush()
 freq_EU.flush()
 freq_AS.flush()
 
+	
+
+
 #bedops
 os.system("sort-bed outfile_sim%s.bed > outfile_sim%s_sorted.bed" %(sim))
 os.system("rm outfile_sim%s.bed" %(sim))
 os.system("bedops --element-of 1 outfile_sim%s_sorted.bed human_genome_mask_sorted.bed > outfile_sim%s_masked.bed" %(sim))
 os.system("rm outfile_sim%s_sorted.bed" %(sim))
+
+def lchoose(N,k):
+		#return -betaln(1 + int(N) - k, 1 + k) - log(int(N) + 1)
+		return sp.gammaln(N+1) - sp.gammaln(N-k+1) - sp.gammaln(k+1)
+
+def project_down(d,m):
+		n = len(d)-1 #check if -1 because matrix dimensions are 170+1, 394+1
+		l = np.arange(0,n+1)
+		res = np.zeros(m+1)#initializes res array? check:numeric(m+1), is +1 bc R is 1 offset?
+		for i in np.arange(0,m+1):
+			res[i] = np.sum(d*np.exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m))) #check this line: res[i+1] = sum(d*exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m)))
+		return res
 
 #sys_stat
 def symmetry_stat():
@@ -135,20 +162,6 @@ def symmetry_stat():
 		EU_AS[(EU_freq), (AS_freq)] = EU_AS[(EU_freq),(AS_freq)]+1
 
 	#project down to 100 by 100 matrix
-	def lchoose(N,k):
-		#return -betaln(1 + int(N) - k, 1 + k) - log(int(N) + 1)
-		return sp.gammaln(N+1) - sp.gammaln(N-k+1) - sp.gammaln(k+1)
-
-	#test = np.exp(lchoose(np.arange(1,100),100))
-	#print test
-	def project_down(d,m):
-		n = len(d)-1 #check if -1 because matrix dimensions are 170+1, 394+1
-		l = np.arange(0,n+1)
-		res = np.zeros(m+1)#initializes res array? check:numeric(m+1), is +1 bc R is 1 offset?
-		for i in np.arange(0,m+1):
-			res[i] = np.sum(d*np.exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m))) #check this line: res[i+1] = sum(d*exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m)))
-		return res
-
 	EU_AS_d = np.zeros((101, 394))
 	for i in range(0,394):
 		EU_AS_d[:,i] = project_down(EU_AS[:,i],100)
@@ -158,16 +171,55 @@ def symmetry_stat():
 		EU_AS_pd[i,:] = project_down(EU_AS_d[i,:],100)
 
 	EU_AS_pd[0,0] = 0
+	return EU_AS_pd
 
-	#calculate and write symmetry stat
-	sym_stat = []
+Symm_stat = symmetry_stat
+#initiate outfile and append parameter values
+	
+#TODO: keep track or unique ID tag
+ID = sim
+
+#calculate and write symmetry stat
+def outfile():	
+	outfile = open('symmetry_stat%s', 'a')
+	outfile.write(ID)
+	outfile.write('\t')
+	outfile.write(args.t1)
+	outfile.write('\t')
+	outfile.write(args.t2)
+	outfile.write('\t')
+	outfile.write(args.t3)
+	outfile.write('\t')
+	outfile.write(args.f1)
+	outfile.write('\t')
+	outfile.write(args.f2)
+	outfile.write('\t')
+	outfile.write(args.f3)
+	outfile.write('\t')
+	outfile.write(args.f4)
+	outfile.write('\t')
+	outfile.write(args.m1)
+	outfile.write('\t')
+	outfile.write(args.m2)
+	outfile.write('\t')
+	outfile.write(args.m3)
+	outfile.write('\t')
+	outfile.write(args.m4)
+	outfile.write('\t')
 	for i in range(0,101):
 		stat =  np.sum((EU_AS_pd[i,:] - EU_AS_pd[:,i]))/np.sum((EU_AS_pd[i,:] + EU_AS_pd[:,i]+1))
-		sym_stat.append(stat)
-	outfile = open('symmetry_stat%s', 'a')
-	outfile.write(str(sym_stat)) #TODO: write as tab delimited file, add the parameters
+		outfile.write(stat)
+		outfile.write('\t')
 	outfile.write('\n')
 	outfile.close()
-	return sym_stat
+	return
+	
+out = outfile
 
-Symm = symmetry_stat
+def outmatrix():
+	outmatrix = open('symmetry_matrix%s', 'w+')
+	outmatrix.write(EU_AS_pd)
+	outmatrix.close()
+	return
+	
+matrix = outmatrix
