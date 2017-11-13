@@ -7,6 +7,7 @@ import scipy.special as sp
 from numpy import log
 from scipy.special import betaln
 import argparse
+from joblib import Parallel, delayed
 
 #Sim parameters from Moorjani et al 2016
 #Ne0 Neanderthal Ne 2500
@@ -181,37 +182,37 @@ ID = par #plus other arguments once we loop through bootstrap
 
 #calculate and write symmetry stat
 #def outfile():	
-outfile = open('symmetry_stat%s' %(par), 'a')
-outfile.write(str(ID))
-outfile.write('\t')
-outfile.write(str(args.t1))
-outfile.write('\t')
-outfile.write(str(args.t2))
-outfile.write('\t')
-outfile.write(str(args.t3))
-outfile.write('\t')
-outfile.write(str(args.f1))
-outfile.write('\t')
-outfile.write(str(args.f2))
-outfile.write('\t')
-outfile.write(str(args.f3))
-outfile.write('\t')
-outfile.write(str(args.f4))
-outfile.write('\t')
-outfile.write(str(args.m1))
-outfile.write('\t')
-outfile.write(str(args.m2))
-outfile.write('\t')
-outfile.write(str(args.m3))
-outfile.write('\t')
-outfile.write(str(args.m4))
-outfile.write('\t')
-for i in range(0,101):
-	stat =  np.sum((EU_AS_pd[i,:] - EU_AS_pd[:,i]))/np.sum((EU_AS_pd[i,:] + EU_AS_pd[:,i]+1))
-	outfile.write(str(stat))
-	outfile.write('\t')
-outfile.write('\n')
-outfile.close()
+#outfile = open('symmetry_stat%s' %(par), 'a')
+#outfile.write(str(ID))
+#outfile.write('\t')
+#outfile.write(str(args.t1))
+#outfile.write('\t')
+#outfile.write(str(args.t2))
+#outfile.write('\t')
+#outfile.write(str(args.t3))
+#outfile.write('\t')
+#outfile.write(str(args.f1))
+#outfile.write('\t')
+#outfile.write(str(args.f2))
+#outfile.write('\t')
+#outfile.write(str(args.f3))
+#outfile.write('\t')
+#outfile.write(str(args.f4))
+#outfile.write('\t')
+#outfile.write(str(args.m1))
+#outfile.write('\t')
+#outfile.write(str(args.m2))
+#outfile.write('\t')
+#outfile.write(str(args.m3))
+#outfile.write('\t')
+#outfile.write(str(args.m4))
+#outfile.write('\t')
+#for i in range(0,101):
+#	stat =  np.sum((EU_AS_pd[i,:] - EU_AS_pd[:,i]))/np.sum((EU_AS_pd[i,:] + EU_AS_pd[:,i]+1))
+#	outfile.write(str(stat))
+#	outfile.write('\t')
+#outfile.write('\n')
+#outfile.close()
 	#return
 	
 #out = outfile
