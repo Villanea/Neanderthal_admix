@@ -30,8 +30,6 @@ from joblib import Parallel, delayed
 
 #TODO: Compartmentalize all the pieces into functions, add random seed generator for ID into the parameter feeding loop
 def sim_pipeline(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n,ID):
-
- 
 	outfile = open('outfile_sim%s.bed' %(ID), 'w+')
 	outfile.close()
 	def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.20,Ne0=10000,Ne1=2500,Ne2=10000,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False, seed=ID):
@@ -126,65 +124,64 @@ def sim_pipeline(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n,ID):
 			return res
 
 	#sys_stat
-	#def symmetry_stat():
-	EU = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=3)
-	AS = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=4)
+	def sys_stat():
+		EU = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=3)
+		AS = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=4)
 
-		#delete sim file
-	os.system("rm outfile_sim%s_masked.bed" %(ID))
+			#delete sim file
+		os.system("rm outfile_sim%s_masked.bed" %(ID))
 
-		#initialize and fill the matrix
-	EU_AS = np.zeros((171, 395)) #170+1, 394+1: +1 to include fixed alleles
-	for i in range(0,len(AS)):
-		EU_freq = EU[i]	
-		AS_freq = AS[i]
-		EU_AS[(EU_freq), (AS_freq)] = EU_AS[(EU_freq),(AS_freq)]+1
+			#initialize and fill the matrix
+		EU_AS = np.zeros((171, 395)) #170+1, 394+1: +1 to include fixed alleles
+		for i in range(0,len(AS)):
+			EU_freq = EU[i]	
+			AS_freq = AS[i]
+			EU_AS[(EU_freq), (AS_freq)] = EU_AS[(EU_freq),(AS_freq)]+1
 
-		#project down to 100 by 100 matrix
-	EU_AS_d = np.zeros((101, 394))
-	for i in range(0,394):
-		EU_AS_d[:,i] = project_down(EU_AS[:,i],100)
+			#project down to 100 by 100 matrix
+		EU_AS_d = np.zeros((101, 394))
+		for i in range(0,394):
+			EU_AS_d[:,i] = project_down(EU_AS[:,i],100)
 
-	EU_AS_pd = np.zeros((101, 101))
-	for i in range(0,101):
-		EU_AS_pd[i,:] = project_down(EU_AS_d[i,:],100)
+		EU_AS_pd = np.zeros((101, 101))
+		for i in range(0,101):
+			EU_AS_pd[i,:] = project_down(EU_AS_d[i,:],100)
 
-	EU_AS_pd[0,0] = 0
-		#return EU_AS_pd
+		EU_AS_pd[0,0] = 0
+		return EU_AS_pd
 
 
-	#calculate and write symmetry stat
-	#def outfile():	
-	outfile = open('symmetry_stat_%s' %(ID), 'a')
-	outfile.write(str(ID))
-	outfile.write('\t')
-	outfile.write(str(t1))
-	outfile.write('\t')
-	outfile.write(str(t2))
-	outfile.write('\t')
-	outfile.write(str(t3))
-	outfile.write('\t')
-	outfile.write(str(f1))
-	outfile.write('\t')
-	outfile.write(str(f2))
-	outfile.write('\t')
-	outfile.write(str(f3))
-	outfile.write('\t')
-	outfile.write(str(f4))
-	outfile.write('\t')
-	outfile.write(str(m1))
-	outfile.write('\t')
-	outfile.write(str(m2))
-	outfile.write('\t')
-	outfile.write(str(m3))
-	outfile.write('\t')
-	outfile.write(str(m4))
-	outfile.write('\t')
 
-	#def outmatrix():
-	outmatrix = open('symmetry_matrix_%s' %(ID), 'w+')
-	outmatrix.write(str(EU_AS_pd))
-	outmatrix.close()
-		#return
+	def outfile(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,ID):	
+		outfile = open('symmetry_stat_%s' %(ID), 'w+')
+		outfile.write(str(ID))
+		outfile.write('\t')
+		outfile.write(str(t1))
+		outfile.write('\t')
+		outfile.write(str(t2))
+		outfile.write('\t')
+		outfile.write(str(t3))
+		outfile.write('\t')
+		outfile.write(str(f1))
+		outfile.write('\t')
+		outfile.write(str(f2))
+		outfile.write('\t')
+		outfile.write(str(f3))
+		outfile.write('\t')
+		outfile.write(str(f4))
+		outfile.write('\t')
+		outfile.write(str(m1))
+		outfile.write('\t')
+		outfile.write(str(m2))
+		outfile.write('\t')
+		outfile.write(str(m3))
+		outfile.write('\t')
+		outfile.write(str(m4))
+		outfile.write('\t')
+
 	
-	#matrix = outmatrix
+	def outmatrix(EU_AS_pd):
+		outmatrix = open('symmetry_matrix_%s' %(ID), 'w+')
+		outmatrix.write(str(EU_AS_pd))
+		outmatrix.close()
+
