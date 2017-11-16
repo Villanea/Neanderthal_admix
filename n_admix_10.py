@@ -106,11 +106,13 @@ def sim_pipeline(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n,ID):
 	N_admix = neanderthal_admixture_model(mix_time1=m1,mix_time2=m2,mix_time3=m3,mix_time4=m4,split_time_1=t1,split_time_2=t2,split_time_3=t3,f1=f1,f2=f2,f3=f3,f4=f4,window_size =w,num_rep=n, ID=ID)
 
 	#bedops
-	os.system("sort-bed outfile_sim%s.bed > outfile_sim%s_sorted.bed" %(ID,ID))
-	os.system("rm outfile_sim%s.bed" %(ID))
-	os.system("bedops --element-of 1 outfile_sim%s_sorted.bed human_genome_mask_sorted.bed > outfile_sim%s_masked.bed" %(ID,ID))
-	os.system("rm outfile_sim%s_sorted.bed" %(ID))
-
+	def bedops():
+		os.system("sort-bed outfile_sim%s.bed > outfile_sim%s_sorted.bed" %(ID,ID))
+		os.system("rm outfile_sim%s.bed" %(ID))
+		os.system("bedops --element-of 1 outfile_sim%s_sorted.bed human_genome_mask_sorted.bed > outfile_sim%s_masked.bed" %(ID,ID))
+		os.system("rm outfile_sim%s_sorted.bed" %(ID))
+	B_ops = bedops()
+	
 	def lchoose(N,k):
 			#return -betaln(1 + int(N) - k, 1 + k) - log(int(N) + 1)
 			return sp.gammaln(N+1) - sp.gammaln(N-k+1) - sp.gammaln(k+1)
@@ -130,7 +132,7 @@ def sim_pipeline(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n,ID):
 
 			#delete sim file
 		os.system("rm outfile_sim%s_masked.bed" %(ID))
-
+	
 			#initialize and fill the matrix
 		EU_AS = np.zeros((171, 395)) #170+1, 394+1: +1 to include fixed alleles
 		for i in range(0,len(AS)):
@@ -149,7 +151,7 @@ def sim_pipeline(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n,ID):
 
 		EU_AS_pd[0,0] = 0
 		return EU_AS_pd
-
+	S_stat = sys_stat()
 
 
 	def outfile(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,ID):	
@@ -178,10 +180,12 @@ def sim_pipeline(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n,ID):
 		outfile.write('\t')
 		outfile.write(str(m4))
 		outfile.write('\t')
-
+	O_file = outfile(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,ID):
 	
 	def outmatrix(EU_AS_pd):
 		outmatrix = open('symmetry_matrix_%s' %(ID), 'w+')
 		outmatrix.write(str(EU_AS_pd))
 		outmatrix.close()
+	O_matrix = outmatrix(EU_AS_pd)
 
+Sim = sim_pipeline(m1=2000,m2=1000,m3=1000,m4=1000,t1=12000,t2=2300,t3=1500,f1=0.022,f2=0.01,f3=0.01,f4=0.20,w=100000,n=1,ID = random.randint(1000000,size=1)
