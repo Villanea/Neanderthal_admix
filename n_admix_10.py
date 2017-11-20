@@ -29,11 +29,8 @@ from joblib import Parallel, delayed
 #eu=european pop 0, as=asian pop 1, ba=basaleur pop 2, nean pop 3		
 
 #TODO: Compartmentalize all the pieces into functions, add random seed generator for ID into the parameter feeding loop
-def sim_pipeline(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n,ID):
-	print(ID)
-	outfile = open('outfile_sim%s.bed' %(ID), 'w+')
-	outfile.close()
-	def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.20,Ne0=10000,Ne1=2500,Ne2=10000,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False, seed=ID):
+
+def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.20,Ne0=10000,Ne1=2500,Ne2=10000,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False, seed=ID):
 		for chr in range(1,23):
 			infile = "/mnt/md0/villanea/MSprime/chr%s_map" %(chr)
 			rho_map = msp.RecombinationMap.read_hapmap(infile)
@@ -81,12 +78,12 @@ def sim_pipeline(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n,ID):
 						freq_AS.append(N_freq_AS)
 						cur_start += window_size
 						cur_end += window_size
-						print cur_end
-						print last
+						#print cur_end
+						#print last
 						if cur_end > last:
 							break
 						cur_win += 1
-						print cur_win
+						#print cur_win
 						cur_site = int(((cur_start+cur_end)+1)/2.0) #random.randint(cur_start,cur_end)
 						print cur_site
 			outfile = open('outfile_sim%s.bed' %(ID), 'a')
@@ -104,89 +101,99 @@ def sim_pipeline(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n,ID):
 			outfile.close()
 		return np.array(pos), np.array(pos1), np.array(freq_EU), np.array(freq_AS)
 
+def bedops():
+	os.system("sort-bed outfile_sim%s.bed > outfile_sim%s_sorted.bed" %(ID,ID))
+	os.system("rm outfile_sim%s.bed" %(ID))
+	os.system("bedops --element-of 1 outfile_sim%s_sorted.bed human_genome_mask_sorted.bed > outfile_sim%s_masked.bed" %(ID,ID))
+	os.system("rm outfile_sim%s_sorted.bed" %(ID))
+
+def lchoose(N,k):
+		#return -betaln(1 + int(N) - k, 1 + k) - log(int(N) + 1)
+		return sp.gammaln(N+1) - sp.gammaln(N-k+1) - sp.gammaln(k+1)
+
+def project_down(d,m):
+		n = len(d)-1 #check if -1 because matrix dimensions are 170+1, 394+1
+		l = np.arange(0,n+1)
+		res = np.zeros(m+1)#initializes res array? check:numeric(m+1), is +1 bc R is 1 offset?
+		for i in np.arange(0,m+1):
+			res[i] = np.sum(d*np.exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m))) #check this line: res[i+1] = sum(d*exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m)))
+		return res
+
+def sys_stat():
+	EU = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=3)
+	AS = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=4)
+
+		#delete sim file
+	os.system("rm outfile_sim%s_masked.bed" %(ID))
+
+		#initialize and fill the matrix
+	EU_AS = np.zeros((171, 395)) #170+1, 394+1: +1 to include fixed alleles
+	for i in range(0,len(AS)):
+		EU_freq = EU[i]	
+		AS_freq = AS[i]
+		EU_AS[(EU_freq), (AS_freq)] = EU_AS[(EU_freq),(AS_freq)]+1
+
+		#project down to 100 by 100 matrix
+	EU_AS_d = np.zeros((101, 394))
+	for i in range(0,394):
+		EU_AS_d[:,i] = project_down(EU_AS[:,i],100)
+
+	EU_AS_pd = np.zeros((101, 101))
+	for i in range(0,101):
+		EU_AS_pd[i,:] = project_down(EU_AS_d[i,:],100)
+
+	EU_AS_pd[0,0] = 0
+	return EU_AS_pd
+
+def outfile(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,ID):	
+	outfile = open('symmetry_stat_%s' %(ID), 'w+')
+	outfile.write(str(ID))
+	outfile.write('\t')
+	outfile.write(str(t1))
+	outfile.write('\t')
+	outfile.write(str(t2))
+	outfile.write('\t')
+	outfile.write(str(t3))
+	outfile.write('\t')
+	outfile.write(str(f1))
+	outfile.write('\t')
+	outfile.write(str(f2))
+	outfile.write('\t')
+	outfile.write(str(f3))
+	outfile.write('\t')
+	outfile.write(str(f4))
+	outfile.write('\t')
+	outfile.write(str(m1))
+	outfile.write('\t')
+	outfile.write(str(m2))
+	outfile.write('\t')
+	outfile.write(str(m3))
+	outfile.write('\t')
+	outfile.write(str(m4))
+	outfile.write('\t')
+
+def outmatrix(EU_AS_pd):
+	outmatrix = open('symmetry_matrix_%s' %(ID), 'w+')
+	outmatrix.write(str(EU_AS_pd))
+	outmatrix.close()
+
+def sim_pipeline(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n,ID):
+	print(ID)
+	outfile = open('outfile_sim%s.bed' %(ID), 'w+')
+	outfile.close()
+	
 	N_admix = neanderthal_admixture_model(mix_time1=m1,mix_time2=m2,mix_time3=m3,mix_time4=m4,split_time_1=t1,split_time_2=t2,split_time_3=t3,f1=f1,f2=f2,f3=f3,f4=f4,window_size =w,num_rep=n, seed=ID)
 
 	#bedops
-	def bedops():
-		os.system("sort-bed outfile_sim%s.bed > outfile_sim%s_sorted.bed" %(ID,ID))
-		os.system("rm outfile_sim%s.bed" %(ID))
-		os.system("bedops --element-of 1 outfile_sim%s_sorted.bed human_genome_mask_sorted.bed > outfile_sim%s_masked.bed" %(ID,ID))
-		os.system("rm outfile_sim%s_sorted.bed" %(ID))
 	B_ops = bedops()
 	
-	def lchoose(N,k):
-			#return -betaln(1 + int(N) - k, 1 + k) - log(int(N) + 1)
-			return sp.gammaln(N+1) - sp.gammaln(N-k+1) - sp.gammaln(k+1)
-
-	def project_down(d,m):
-			n = len(d)-1 #check if -1 because matrix dimensions are 170+1, 394+1
-			l = np.arange(0,n+1)
-			res = np.zeros(m+1)#initializes res array? check:numeric(m+1), is +1 bc R is 1 offset?
-			for i in np.arange(0,m+1):
-				res[i] = np.sum(d*np.exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m))) #check this line: res[i+1] = sum(d*exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m)))
-			return res
 
 	#sys_stat
-	def sys_stat():
-		EU = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=3)
-		AS = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=4)
-
-			#delete sim file
-		os.system("rm outfile_sim%s_masked.bed" %(ID))
-	
-			#initialize and fill the matrix
-		EU_AS = np.zeros((171, 395)) #170+1, 394+1: +1 to include fixed alleles
-		for i in range(0,len(AS)):
-			EU_freq = EU[i]	
-			AS_freq = AS[i]
-			EU_AS[(EU_freq), (AS_freq)] = EU_AS[(EU_freq),(AS_freq)]+1
-
-			#project down to 100 by 100 matrix
-		EU_AS_d = np.zeros((101, 394))
-		for i in range(0,394):
-			EU_AS_d[:,i] = project_down(EU_AS[:,i],100)
-
-		EU_AS_pd = np.zeros((101, 101))
-		for i in range(0,101):
-			EU_AS_pd[i,:] = project_down(EU_AS_d[i,:],100)
-
-		EU_AS_pd[0,0] = 0
-		return EU_AS_pd
 	S_stat = sys_stat()
 
-
-	def outfile(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,ID):	
-		outfile = open('symmetry_stat_%s' %(ID), 'w+')
-		outfile.write(str(ID))
-		outfile.write('\t')
-		outfile.write(str(t1))
-		outfile.write('\t')
-		outfile.write(str(t2))
-		outfile.write('\t')
-		outfile.write(str(t3))
-		outfile.write('\t')
-		outfile.write(str(f1))
-		outfile.write('\t')
-		outfile.write(str(f2))
-		outfile.write('\t')
-		outfile.write(str(f3))
-		outfile.write('\t')
-		outfile.write(str(f4))
-		outfile.write('\t')
-		outfile.write(str(m1))
-		outfile.write('\t')
-		outfile.write(str(m2))
-		outfile.write('\t')
-		outfile.write(str(m3))
-		outfile.write('\t')
-		outfile.write(str(m4))
-		outfile.write('\t')
+	#outfile reference and matrix
 	O_file = outfile(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,ID)
 	
-	def outmatrix(EU_AS_pd):
-		outmatrix = open('symmetry_matrix_%s' %(ID), 'w+')
-		outmatrix.write(str(EU_AS_pd))
-		outmatrix.close()
 	O_matrix = outmatrix(EU_AS_pd)
 
 Sim = sim_pipeline(m1=2000,m2=1000,m3=1000,m4=1000,t1=12000,t2=2300,t3=1500,f1=0.022,f2=0.01,f3=0.01,f4=0.20,w=100000,n=1,ID = random.randint(1,1000000))
