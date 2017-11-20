@@ -30,7 +30,7 @@ from joblib import Parallel, delayed
 
 #TODO: Compartmentalize all the pieces into functions, add random seed generator for ID into the parameter feeding loop
 
-def neanderthal_admixture_model(num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.20,Ne0=10000,Ne1=2500,Ne2=10000,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False, seed=ID):
+def neanderthal_admixture_model(num_eu,num_as,num_nean,anc_time,mix_time1,mix_time2,mix_time3,mix_time4,split_time_1,split_time_2,split_time_3,f1,f2,f3,f4,Ne0,Ne1,Ne2,mu,window_size,num_SNP,num_rep,coverage=False,seed):
 		for chr in range(1,23):
 			infile = "/mnt/md0/villanea/MSprime/chr%s_map" %(chr)
 			rho_map = msp.RecombinationMap.read_hapmap(infile)
