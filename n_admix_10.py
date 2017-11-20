@@ -177,7 +177,9 @@ def outmatrix(EU_AS_pd):
 	outmatrix.write(str(EU_AS_pd))
 	outmatrix.close()
 
+#Main function, calls other functions
 def sim_pipeline(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n):
+	global ID
 	print(ID)
 	outfile = open('outfile_sim%s.bed' %(ID), 'w+')
 	outfile.close()
