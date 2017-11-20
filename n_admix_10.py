@@ -84,7 +84,7 @@ def neanderthal_admixture_model(seed=1,num_eu=170,num_as=394,num_nean = 1,anc_ti
 					cur_win += 1
 					#print cur_win
 					cur_site = int(((cur_start+cur_end)+1)/2.0) #random.randint(cur_start,cur_end)
-					print cur_site
+					print cur_sim
 		outfile = open('outfile_sim%s.bed' %(ID), 'a')
 		for line in range(0,len(freq_AS)):
 			outfile.write(chrom)
