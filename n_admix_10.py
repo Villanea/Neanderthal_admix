@@ -199,5 +199,4 @@ def outmatrix(EU_AS_pd):
 	outmatrix.write(str(EU_AS_pd))
 	outmatrix.close()
 
-ID = = random.randint(1,1000000)
-Sim = sim_pipeline(ID,m1=2000,m2=1000,m3=1000,m4=1000,t1=12000,t2=2300,t3=1500,f1=0.022,f2=0.01,f3=0.01,f4=0.20,w=100000,n=1)
+Sim = Parallel(n_jobs=1)(delayed(sim_pipeline)(ID,m1=2000,m2=1000,m3=1000,m4=1000,t1=12000,t2=2300,t3=1500,f1=0.022,f2=0.01,f3=0.01,f4=0.20,w=100000,n=1) for ID in random.randint(1,1000000))
