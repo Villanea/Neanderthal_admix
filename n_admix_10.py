@@ -160,6 +160,7 @@ def sys_stat():
 		EU_AS_d[:,i] = project_down(EU_AS[:,i],100)
 
 	EU_AS_pd = np.zeros((101, 101))
+	global EU_AS_pd
 	for i in range(0,101):
 		EU_AS_pd[i,:] = project_down(EU_AS_d[i,:],100)
 
@@ -198,4 +199,5 @@ def outmatrix(EU_AS_pd):
 	outmatrix.write(str(EU_AS_pd))
 	outmatrix.close()
 
-Sim = sim_pipeline(ID = random.randint(1,1000000),m1=2000,m2=1000,m3=1000,m4=1000,t1=12000,t2=2300,t3=1500,f1=0.022,f2=0.01,f3=0.01,f4=0.20,w=100000,n=1)
+ID = = random.randint(1,1000000)
+Sim = sim_pipeline(ID,m1=2000,m2=1000,m3=1000,m4=1000,t1=12000,t2=2300,t3=1500,f1=0.022,f2=0.01,f3=0.01,f4=0.20,w=100000,n=1)
