@@ -35,22 +35,22 @@ def sim_pipeline(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n):
 	outfile = open('outfile_sim%s.bed' %(ID), 'w+')
 	outfile.close()
 
-	N_admix = neanderthal_admixture_model(seed=ID,mix_time1=m1,mix_time2=m2,mix_time3=m3,mix_time4=m4,split_time_1=t1,split_time_2=t2,split_time_3=t3,f1=f1,f2=f2,f3=f3,f4=f4,window_size =w,num_rep=n)
+	N_admix = neanderthal_admixture_model(ID,seed=ID,mix_time1=m1,mix_time2=m2,mix_time3=m3,mix_time4=m4,split_time_1=t1,split_time_2=t2,split_time_3=t3,f1=f1,f2=f2,f3=f3,f4=f4,window_size =w,num_rep=n)
 
 	#bedops
-	B_ops = bedops()
+	B_ops = bedops(ID)
 	
 	#global EU_AS_pd
 	#sys_stat
-	S_stat = sys_stat()
+	S_stat = sys_stat(ID)
 
 	#outfile reference and matrix
 	O_file = ofile(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,ID)
 	
-	O_matrix = outmatrix(EU_AS_pd)
+	O_matrix = outmatrix(EU_AS)
 
 
-def neanderthal_admixture_model(seed=1,num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.20,Ne0=10000,Ne1=2500,Ne2=10000,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False):
+def neanderthal_admixture_model(ID=1,seed=1,num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.20,Ne0=10000,Ne1=2500,Ne2=10000,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False):
 	for chr in range(1,23):
 		infile = "/mnt/md0/villanea/MSprime/chr%s_map" %(chr)
 		rho_map = msp.RecombinationMap.read_hapmap(infile)
@@ -122,7 +122,7 @@ def neanderthal_admixture_model(seed=1,num_eu=170,num_as=394,num_nean = 1,anc_ti
 	return np.array(pos), np.array(pos1), np.array(freq_EU), np.array(freq_AS)
 
 
-def bedops():
+def bedops(ID):
 	os.system("sort-bed outfile_sim%s.bed > outfile_sim%s_sorted.bed" %(ID,ID))
 	os.system("rm outfile_sim%s.bed" %(ID))
 	os.system("bedops --element-of 1 outfile_sim%s_sorted.bed human_genome_mask_sorted.bed > outfile_sim%s_masked.bed" %(ID,ID))
@@ -140,7 +140,7 @@ def project_down(d,m):
 			res[i] = np.sum(d*np.exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m))) #check this line: res[i+1] = sum(d*exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m)))
 		return res
 
-def sys_stat():
+def sys_stat(ID):
 	EU = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=3)
 	AS = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=4)
 
@@ -155,16 +155,16 @@ def sys_stat():
 		EU_AS[(EU_freq), (AS_freq)] = EU_AS[(EU_freq),(AS_freq)]+1
 
 		#project down to 100 by 100 matrix
-	EU_AS_d = np.zeros((101, 394))
-	for i in range(0,394):
-		EU_AS_d[:,i] = project_down(EU_AS[:,i],100)
+	#EU_AS_d = np.zeros((101, 394))
+	#for i in range(0,394):
+	#	EU_AS_d[:,i] = project_down(EU_AS[:,i],100)
 
-	EU_AS_pd = np.zeros((101, 101))
-	global EU_AS_pd
-	for i in range(0,101):
-		EU_AS_pd[i,:] = project_down(EU_AS_d[i,:],100)
-	EU_AS_pd[0,0] = 0
-	return EU_AS_pd
+	#EU_AS_pd = np.zeros((101, 101))
+	#global EU_AS_pd
+	#for i in range(0,101):
+	#	EU_AS_pd[i,:] = project_down(EU_AS_d[i,:],100)
+	#EU_AS_pd[0,0] = 0
+	return EU_AS
 
 def ofile(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,ID):	
 	outfile = open('symmetry_stat_%s' %(ID), 'w+')
@@ -193,10 +193,8 @@ def ofile(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,ID):
 	outfile.write(str(m4))
 	outfile.write('\t')
 
-def outmatrix(EU_AS_pd):
-	outmatrix = open('symmetry_matrix_%s' %(ID), 'w+')
-	outmatrix.write(str(EU_AS_pd))
-	outmatrix.close()
+def outmatrix(EU_AS,ID):
+	np.savetxt('symmetry_matrix_%s' %(ID), EU_AS, delimiter='\t')
 
 
-Sim = Parallel(n_jobs=1)(delayed(sim_pipeline)(ID,m1=2000,m2=1000,m3=1000,m4=1000,t1=12000,t2=2300,t3=1500,f1=0.022,f2=0.01,f3=0.01,f4=0.20,w=100000,n=1) for ID in random.randint(1,1000000))
+Sim = Parallel(n_jobs=2)(delayed(sim_pipeline)(ID,m1=2000,m2=1000,m3=1000,m4=1000,t1=12000,t2=2300,t3=1500,f1=0.022,f2=0.01,f3=0.01,f4=0.20,w=100000,n=1) for ID in np.random.randint(1,1000000,size=2))
