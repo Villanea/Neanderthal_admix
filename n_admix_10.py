@@ -28,8 +28,8 @@ from joblib import Parallel, delayed
 #m4 f4 time 1000 gen
 #eu=european pop 0, as=asian pop 1, ba=basaleur pop 2, nean pop 3		
 
-#TODO: Compartmentalize all the pieces into functions, add random seed generator for ID into the parameter feeding loop
-#Main function, calls other functions
+#TODO: Add loop to feed random parameter values when mass simulating
+
 def sim_pipeline(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n):
 	print(ID)
 	outfile = open('outfile_sim%s.bed' %(ID), 'w+')
@@ -40,8 +40,10 @@ def sim_pipeline(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n):
 	#bedops
 	B_ops = bedops(ID)
 	
-	#global EU_AS_pd
+	
 	#sys_stat
+	EU_AS = np.zeros((171, 395)) #170+1, 394+1: +1 to include fixed alleles
+	#global EU_AS
 	S_stat = sys_stat(ID)
 
 	#outfile reference and matrix
@@ -148,7 +150,8 @@ def sys_stat(ID):
 	os.system("rm outfile_sim%s_masked.bed" %(ID))
 
 		#initialize and fill the matrix
-	EU_AS = np.zeros((171, 395)) #170+1, 394+1: +1 to include fixed alleles
+	#EU_AS = np.zeros((171, 395)) #170+1, 394+1: +1 to include fixed alleles
+	global EU_AS
 	for i in range(0,len(AS)):
 		EU_freq = EU[i]	
 		AS_freq = AS[i]
@@ -166,7 +169,7 @@ def sys_stat(ID):
 	#EU_AS_pd[0,0] = 0
 	return EU_AS
 
-def ofile(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,ID):	
+def ofile(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4):	
 	outfile = open('symmetry_stat_%s' %(ID), 'w+')
 	outfile.write(str(ID))
 	outfile.write('\t')
@@ -193,7 +196,7 @@ def ofile(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,ID):
 	outfile.write(str(m4))
 	outfile.write('\t')
 
-def outmatrix(EU_AS,ID):
+def outmatrix(ID,EU_AS):
 	np.savetxt('symmetry_matrix_%s' %(ID), EU_AS, delimiter='\t')
 
 
