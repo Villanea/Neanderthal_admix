@@ -8,6 +8,7 @@ from numpy import log
 from scipy.special import betaln
 import argparse
 from joblib import Parallel, delayed
+import scipy.stats
 
 #Sim parameters from Moorjani et al 2016
 #Ne0 Neanderthal Ne 2500
@@ -28,7 +29,7 @@ from joblib import Parallel, delayed
 #m4 f4 time 1000 gen
 #eu=european pop 0, as=asian pop 1, ba=basaleur pop 2, nean pop 3		
 
-#TODO: Add loop to feed random parameter values when mass simulating
+#TODO: Add Ne to the random parameters, figure out overlapping dates
 
 def sim_pipeline(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n):
 	print(ID)
@@ -42,14 +43,12 @@ def sim_pipeline(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n):
 	
 	
 	#sys_stat
-	EU_AS = np.zeros((171, 395)) #170+1, 394+1: +1 to include fixed alleles
-	#global EU_AS
 	S_stat = sys_stat(ID)
 
 	#outfile reference and matrix
-	O_file = ofile(m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,ID)
+	O_file = ofile(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4)
 	
-	O_matrix = outmatrix(EU_AS)
+	#O_matrix = outmatrix(EU_AS)
 
 
 def neanderthal_admixture_model(ID=1,seed=1,num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.20,Ne0=10000,Ne1=2500,Ne2=10000,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False):
@@ -67,6 +66,7 @@ def neanderthal_admixture_model(ID=1,seed=1,num_eu=170,num_as=394,num_nean = 1,a
 				msp.MassMigration(time=mix_time1,source=1,destination=3,proportion = f1), #first pulse
 				msp.MassMigration(time=split_time_2,source=1,destination=2,proportion=1.0), #BE AS split
 				msp.MassMigration(time=split_time_1,source=3,destination=2,proportion=1.0)] # Neand AS split
+		divergence = sorted(divergence, key = lambda x: x.time)
 		sims = msp.simulate(samples=samples,Ne=Ne0,population_configurations=pop_config,demographic_events=divergence,mutation_rate=mu,recombination_map=rho_map,num_replicates=num_rep)
 		chrom = "chr%s" %(chr)
 		pos = []
@@ -100,14 +100,11 @@ def neanderthal_admixture_model(ID=1,seed=1,num_eu=170,num_as=394,num_nean = 1,a
 					freq_AS.append(N_freq_AS)
 					cur_start += window_size
 					cur_end += window_size
-					#print cur_end
-					#print last
 					if cur_end > last:
 						break
 					cur_win += 1
-					#print cur_win
-					cur_site = int(((cur_start+cur_end)+1)/2.0) #random.randint(cur_start,cur_end)
-					print cur_sim
+					print cur_win
+					cur_site = int(((cur_start+cur_end)+1)/2.0)
 		outfile = open('outfile_sim%s.bed' %(ID), 'a')
 		for line in range(0,len(freq_AS)):
 			outfile.write(chrom)
@@ -130,47 +127,23 @@ def bedops(ID):
 	os.system("bedops --element-of 1 outfile_sim%s_sorted.bed human_genome_mask_sorted.bed > outfile_sim%s_masked.bed" %(ID,ID))
 	os.system("rm outfile_sim%s_sorted.bed" %(ID))
 
-def lchoose(N,k):
-		#return -betaln(1 + int(N) - k, 1 + k) - log(int(N) + 1)
-		return sp.gammaln(N+1) - sp.gammaln(N-k+1) - sp.gammaln(k+1)
-
-def project_down(d,m):
-		n = len(d)-1 #check if -1 because matrix dimensions are 170+1, 394+1
-		l = np.arange(0,n+1)
-		res = np.zeros(m+1)#initializes res array? check:numeric(m+1), is +1 bc R is 1 offset?
-		for i in np.arange(0,m+1):
-			res[i] = np.sum(d*np.exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m))) #check this line: res[i+1] = sum(d*exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m)))
-		return res
-
 def sys_stat(ID):
-	EU = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=3)
-	AS = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=4)
+		EU = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=3)
+		AS = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=4)
 
 		#delete sim file
-	os.system("rm outfile_sim%s_masked.bed" %(ID))
+		os.system("rm outfile_sim%s_masked.bed" %(ID))
 
 		#initialize and fill the matrix
-	#EU_AS = np.zeros((171, 395)) #170+1, 394+1: +1 to include fixed alleles
-	global EU_AS
-	for i in range(0,len(AS)):
-		EU_freq = EU[i]	
-		AS_freq = AS[i]
-		EU_AS[(EU_freq), (AS_freq)] = EU_AS[(EU_freq),(AS_freq)]+1
-
-		#project down to 100 by 100 matrix
-	#EU_AS_d = np.zeros((101, 394))
-	#for i in range(0,394):
-	#	EU_AS_d[:,i] = project_down(EU_AS[:,i],100)
-
-	#EU_AS_pd = np.zeros((101, 101))
-	#global EU_AS_pd
-	#for i in range(0,101):
-	#	EU_AS_pd[i,:] = project_down(EU_AS_d[i,:],100)
-	#EU_AS_pd[0,0] = 0
-	return EU_AS
+		EU_AS = np.zeros((171, 395)) #170+1, 394+1: +1 to include fixed alleles
+		for i in range(0,len(AS)):
+			EU_freq = EU[i]	
+			AS_freq = AS[i]
+			EU_AS[(EU_freq), (AS_freq)] = EU_AS[(EU_freq),(AS_freq)]+1
+		np.savetxt('symmetry_matrix_%s.txt' %(ID), EU_AS, delimiter='\t')
 
 def ofile(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4):	
-	outfile = open('symmetry_stat_%s' %(ID), 'w+')
+	outfile = open('symmetry_stat_%s.txt' %(ID), 'w+')
 	outfile.write(str(ID))
 	outfile.write('\t')
 	outfile.write(str(t1))
@@ -196,8 +169,34 @@ def ofile(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4):
 	outfile.write(str(m4))
 	outfile.write('\t')
 
-def outmatrix(ID,EU_AS):
-	np.savetxt('symmetry_matrix_%s' %(ID), EU_AS, delimiter='\t')
 
+#Ne0 Neanderthal Ne 2500
+#Ne1 Europe Ne 10000
+#Ne2 East Asia Ne 10000
+#t1 split time_1 12000 gen 
+#t2 split time_2 2300 gen
+#t3 split time 3 1500 gen
+#f1 0.022 - original neanderthal pulse
+#f2 0.01 - second pulse to east asia
+#f3 0.01 - second pulse to europe
+#f4 0.20 - dilution pulse to europe
+#m1 f1 time 2000 gen
+#m2 f2 time 1000 gen
+#m3 f3 time 1000 gen
+#m4 f4 time 1000 gen
+#eu=european pop 0, as=asian pop 1, ba=basaleur pop 2, nean pop 3    
 
-Sim = Parallel(n_jobs=2)(delayed(sim_pipeline)(ID,m1=2000,m2=1000,m3=1000,m4=1000,t1=12000,t2=2300,t3=1500,f1=0.022,f2=0.01,f3=0.01,f4=0.20,w=100000,n=1) for ID in np.random.randint(1,1000000,size=2))
+ID = np.random.randint(1,100000000,size=2)
+m1 = scipy.stats.uniform.rvs(loc=1701, scale=2500, size=2)
+m2 = scipy.stats.uniform.rvs(loc=500, scale=1300, size=2)
+m3 = scipy.stats.uniform.rvs(loc=500, scale=1300, size=2)
+m4 = scipy.stats.uniform.rvs(loc=500, scale=1300, size=2)
+t1 = scipy.stats.uniform.rvs(loc=10000, scale=14000, size=2)
+t2 = scipy.stats.uniform.rvs(loc=2100, scale=2501, size=2)
+t3 = scipy.stats.uniform.rvs(loc=1301, scale=1700, size=2)
+f1 = scipy.stats.uniform.rvs(loc=0, scale=0.1, size=2)
+f2 = scipy.stats.uniform.rvs(loc=0, scale=0.1, size=2)
+f3 = scipy.stats.uniform.rvs(loc=0, scale=0.1, size=2)
+f4 = scipy.stats.uniform.rvs(loc=0, scale=0.5, size=2)
+
+Sim = Parallel(n_jobs=2)(delayed(sim_pipeline)(ID[i],m1=m1[i],m2=m2[i],m3=m3[i],m4=m4[i],t1=t1[i],t2=t2[i],t3=t3[i],f1=f1[i],f2=f2[i],f3=f3[i],f4=f4[i],w=100000,n=1) for i in range(2))
