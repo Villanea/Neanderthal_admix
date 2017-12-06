@@ -11,32 +11,14 @@ from joblib import Parallel, delayed
 import scipy.stats
 
 #Sim parameters from Moorjani et al 2016
-#Ne0 Neanderthal Ne 2500
-#Ne1 Europe Ne 10000
-#Ne2 East Asia Ne 10000
-#mu 1.5e-8 bp/gen
-#rho 1.0e-8 bp/gen
-#t1 split time_1 12000 gen
-#t2 split time_2 2300 gen
-#t3 split time 3 1500 gen
-#f1 0.022 - original neanderthal pulse
-#f2 0.01 - second pulse to east asia
-#f3 0.01 - second pulse to europe
-#f4 0.20 - dilution pulse to europe
-#m1 f1 time 2000 gen
-#m2 f2 time 1000 gen
-#m3 f3 time 1000 gen
-#m4 f4 time 1000 gen
-#eu=european pop 0, as=asian pop 1, ba=basaleur pop 2, nean pop 3		
-
 #TODO: Add Ne to the random parameters, figure out overlapping dates
 
-def sim_pipeline(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n):
+def sim_pipeline(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,Ne0,Ne1,Ne3,w,n):
 	print(ID)
 	outfile = open('outfile_sim%s.bed' %(ID), 'w+')
 	outfile.close()
 
-	N_admix = neanderthal_admixture_model(ID,seed=ID,mix_time1=m1,mix_time2=m2,mix_time3=m3,mix_time4=m4,split_time_1=t1,split_time_2=t2,split_time_3=t3,f1=f1,f2=f2,f3=f3,f4=f4,window_size =w,num_rep=n)
+	N_admix = neanderthal_admixture_model(ID,seed=ID,mix_time1=m1,mix_time2=m2,mix_time3=m3,mix_time4=m4,split_time_1=t1,split_time_2=t2,split_time_3=t3,f1=f1,f2=f2,f3=f3,f4=f4,Ne0=Ne0,Ne1=Ne1,Ne3=Ne3,window_size=w,num_rep=n)
 
 	#bedops
 	B_ops = bedops(ID)
@@ -46,29 +28,29 @@ def sim_pipeline(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,w,n):
 	S_stat = sys_stat(ID)
 
 	#outfile reference and matrix
-	O_file = ofile(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4)
-	
-	#O_matrix = outmatrix(EU_AS)
+	O_file = ofile(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,Ne0,Ne1,Ne3)
 
 
-def neanderthal_admixture_model(ID=1,seed=1,num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.20,Ne0=10000,Ne1=2500,Ne2=10000,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False):
+def neanderthal_admixture_model(ID=1,seed=1,num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.20,Ne0=10000,Ne1=10000,Ne3=2500,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False):
 	for chr in range(1,23):
 		infile = "/mnt/md0/villanea/MSprime/chr%s_map" %(chr)
 		rho_map = msp.RecombinationMap.read_hapmap(infile)
 		samples = [msp.Sample(population=0,time=0)]*num_eu
 		samples.extend([msp.Sample(population=1,time=0)]*num_as) #no sampling of Basal Eurasian pop
 		samples.extend([msp.Sample(population=3,time=anc_time)]*(num_nean)) #sample 1 Neanderthal for comparison
-		pop_config = [msp.PopulationConfiguration(initial_size=Ne0),msp.PopulationConfiguration(initial_size=Ne0),msp.PopulationConfiguration(initial_size=Ne0),msp.PopulationConfiguration(initial_size=Ne1)]
+		pop_config = [msp.PopulationConfiguration(initial_size=Ne0),msp.PopulationConfiguration(initial_size=Ne1),msp.PopulationConfiguration(initial_size=Ne0),msp.PopulationConfiguration(initial_size=Ne3)]
 		divergence = [msp.MassMigration(time=mix_time4,source=0,destination=2,proportion = f4), #BE dilution into EU
 				msp.MassMigration(time=mix_time3,source=0,destination=3,proportion = f3), #second pulse EU
 				msp.MassMigration(time=mix_time2,source=1,destination=3,proportion = f2), #second pulse AS
 				msp.MassMigration(time=split_time_3,source=0,destination=1,proportion=1.0), #EU AS split
 				msp.MassMigration(time=mix_time1,source=1,destination=3,proportion = f1), #first pulse
 				msp.MassMigration(time=split_time_2,source=1,destination=2,proportion=1.0), #BE AS split
-				msp.MassMigration(time=split_time_1,source=3,destination=2,proportion=1.0)] # Neand AS split
+				msp.MassMigration(time=split_time_1,source=3,destination=2,proportion=1.0)] # Neand BE split
 		divergence = sorted(divergence, key = lambda x: x.time)
 		sims = msp.simulate(samples=samples,Ne=Ne0,population_configurations=pop_config,demographic_events=divergence,mutation_rate=mu,recombination_map=rho_map,num_replicates=num_rep)
+		#print("done simulating")
 		chrom = "chr%s" %(chr)
+		print(chrom)
 		pos = []
 		pos1 = []
 		freq_EU = []
@@ -103,7 +85,7 @@ def neanderthal_admixture_model(ID=1,seed=1,num_eu=170,num_as=394,num_nean = 1,a
 					if cur_end > last:
 						break
 					cur_win += 1
-					print cur_win
+					#print(cur_win)
 					cur_site = int(((cur_start+cur_end)+1)/2.0)
 		outfile = open('outfile_sim%s.bed' %(ID), 'a')
 		for line in range(0,len(freq_AS)):
@@ -142,7 +124,7 @@ def sys_stat(ID):
 			EU_AS[(EU_freq), (AS_freq)] = EU_AS[(EU_freq),(AS_freq)]+1
 		np.savetxt('symmetry_matrix_%s.txt' %(ID), EU_AS, delimiter='\t')
 
-def ofile(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4):	
+def ofile(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,Ne0,Ne1,Ne3):	
 	outfile = open('symmetry_stat_%s.txt' %(ID), 'w+')
 	outfile.write(str(ID))
 	outfile.write('\t')
@@ -168,35 +150,51 @@ def ofile(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4):
 	outfile.write('\t')
 	outfile.write(str(m4))
 	outfile.write('\t')
+	outfile.write(str(Ne0))
+        outfile.write('\t')
+	outfile.write(str(Ne1))
+        outfile.write('\t')
+	outfile.write(str(Ne3))
+        outfile.write('\t')
 
-
-#Ne0 Neanderthal Ne 2500
-#Ne1 Europe Ne 10000
-#Ne2 East Asia Ne 10000
-#t1 split time_1 12000 gen 
-#t2 split time_2 2300 gen
-#t3 split time 3 1500 gen
-#f1 0.022 - original neanderthal pulse
-#f2 0.01 - second pulse to east asia
-#f3 0.01 - second pulse to europe
-#f4 0.20 - dilution pulse to europe
 #m1 f1 time 2000 gen
 #m2 f2 time 1000 gen
 #m3 f3 time 1000 gen
 #m4 f4 time 1000 gen
-#eu=european pop 0, as=asian pop 1, ba=basaleur pop 2, nean pop 3    
+#t1 split time_1 12000 gen 
+#t2 split time_2 2300 gen
+#t3 split time_3 1500 gen
+#f1 0.022 - original neanderthal pulse
+#f2 0.01 - second pulse to east asia
+#f3 0.01 - second pulse to europe
+#f4 0.20 - dilution pulse to europe
+#Ne0 EU and BE Ne 10000
+#Ne1 AS 10000
+#Ne3 Nean Ne 2500
+#EU=european pop 0, AS=asian pop 1, BE=basaleur pop 2, Nean pop 3    
 
 ID = np.random.randint(1,100000000,size=2)
-m1 = scipy.stats.uniform.rvs(loc=1701, scale=2500, size=2)
-m2 = scipy.stats.uniform.rvs(loc=500, scale=1300, size=2)
-m3 = scipy.stats.uniform.rvs(loc=500, scale=1300, size=2)
-m4 = scipy.stats.uniform.rvs(loc=500, scale=1300, size=2)
-t1 = scipy.stats.uniform.rvs(loc=10000, scale=14000, size=2)
-t2 = scipy.stats.uniform.rvs(loc=2100, scale=2501, size=2)
-t3 = scipy.stats.uniform.rvs(loc=1301, scale=1700, size=2)
+m1 = scipy.stats.uniform.rvs(loc=1500, scale=1500, size=2)
+print(m1)
+t_bound = 2000
+t3 = scipy.stats.uniform.rvs(loc=1300, scale=(np.minimum(t_bound,m1)-1300), size=2)
+print(t3)
+m_bound = 2000
+m2 = scipy.stats.uniform.rvs(loc=800, scale=(np.minimum(m_bound,t3)-800), size=2)
+print(m2)
+m3 = scipy.stats.uniform.rvs(loc=800, scale=(np.minimum(m_bound,t3)-800), size=2)
+print(m3)
+m4 = scipy.stats.uniform.rvs(loc=200, scale=(np.minimum(m_bound,t3)-200), size=2)
+print(m4)
 f1 = scipy.stats.uniform.rvs(loc=0, scale=0.1, size=2)
 f2 = scipy.stats.uniform.rvs(loc=0, scale=0.1, size=2)
 f3 = scipy.stats.uniform.rvs(loc=0, scale=0.1, size=2)
 f4 = scipy.stats.uniform.rvs(loc=0, scale=0.5, size=2)
+Ne0 = np.rint(scipy.stats.uniform.rvs(loc=5000, scale=95000, size=2))
+Ne1 = np.rint(scipy.stats.uniform.rvs(loc=5000, scale=95000, size=2))
+Ne3 = np.rint(scipy.stats.uniform.rvs(loc=500, scale=4500, size=2))
+print(Ne3)
 
-Sim = Parallel(n_jobs=2)(delayed(sim_pipeline)(ID[i],m1=m1[i],m2=m2[i],m3=m3[i],m4=m4[i],t1=t1[i],t2=t2[i],t3=t3[i],f1=f1[i],f2=f2[i],f3=f3[i],f4=f4[i],w=100000,n=1) for i in range(2))
+#Sim = Parallel(n_jobs=2)(delayed(sim_pipeline)(ID[i],m1=2000,m2=1000,m3=1000,m4=1000,t1=12000,t2=2300,t3=1500,f1=0.022,f2=0.01,f3=0.01,f4=0.2,Ne0=Ne0[i],Ne1=Ne1[i],Ne3=Ne3[i],w=100000,n=1) for i in range(2))
+
+Sim = Parallel(n_jobs=2)(delayed(sim_pipeline)(ID[i],m1=m1[i],m2=m2[i],m3=m3[i],m4=m4[i],t1=10000,t2=3000,t3=t3[i],f1=f1[i],f2=f2[i],f3=f3[i],f4=f4[i],Ne0=Ne0[i],Ne1=Ne1[i],Ne3=Ne3[i],w=100000,n=1) for i in range(2))
