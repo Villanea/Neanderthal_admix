@@ -35,7 +35,7 @@ def sim_pipeline(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,Ne0,Ne1,Ne3,Ne4,w,n):
 
 
 def neanderthal_admixture_model(ID=1,seed=1,num_eu=170,num_as=394,num_nean = 1,anc_time=900,mix_time1=2000,mix_time2=1000,mix_time3=1000,mix_time4=1000,split_time_1=120000,split_time_2=2300,split_time_3=1500,f1=0.022,f2=0.00,f3=0.00,f4=0.20,Ne0=10000,Ne1=10000,Ne2=1,Ne3=2500,Ne4=10000,mu=1.5e-8,window_size = 100000,num_SNP = 1,num_rep=1,coverage=False):
-	for chr in range(22,23):
+	for chr in range(1,23):
 		infile = "/mnt/md0/villanea/MSprime/chr%s_map" %(chr)
 		rho_map = msp.RecombinationMap.read_hapmap(infile)
 		samples = [msp.Sample(population=0,time=0)]*num_eu
@@ -118,18 +118,18 @@ def bedops(ID):
 def sys_stat(ID):
 		EU = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=3)
 		AS = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=4)
-		print EU
+
 		#delete sim file
 		os.system("rm outfile_sim%s_masked.bed" %(ID))
 
 		#initialize and fill the matrix
 		EU_AS = np.zeros((171, 395)) #170+1, 394+1: +1 to include fixed alleles
 		for i in range(0,len(AS)):
-			EU_freq = EU[i]	
-			AS_freq = AS[i]
+			EU_freq = int(EU[i])	
+			AS_freq = int(AS[i])
 			EU_AS[(EU_freq), (AS_freq)] = EU_AS[(EU_freq),(AS_freq)]+1
 		np.savetxt('symmetry_matrix_%s.txt' %(ID), EU_AS, delimiter='\t')
-		print "made matrix"
+
 
 def ofile(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,Ne0,Ne1,Ne3,Ne4):	
 	outfile = open('symmetry_stat_%s.txt' %(ID), 'w+')
@@ -183,10 +183,9 @@ def ofile(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,Ne0,Ne1,Ne3,Ne4):
 #Ne4 AS_EU ancestral pop Ne
 #EU=european pop 0, AS=asian pop 1, BE=basaleur pop 2, Nean pop 3    
 
-num_reps=1
+num_reps=1000
 
 ID = np.random.randint(1,100000000,size=num_reps)
-print ID
 t1 = scipy.stats.uniform.rvs(loc=10000, scale=16000, size=num_reps)
 m1 = scipy.stats.uniform.rvs(loc=1500, scale=1500, size=num_reps)
 t_bound = 2000
@@ -210,4 +209,4 @@ Ne4 = np.rint(scipy.stats.uniform.rvs(loc=5000, scale=45000, size=num_reps))
 
 #Sim = Parallel(n_jobs=1)(delayed(sim_pipeline)(ID[i],m1=2000,m2=1000,m3=1000,m4=1000,t1=12000,t2=2300,t3=1500,f1=0.022,f2=0.01,f3=0.01,f4=0.2,Ne0=10000,Ne1=10000,Ne3=2500,Ne4=10000,w=100000,n=1) for i in range(2))
 
-Sim = Parallel(n_jobs=1)(delayed(sim_pipeline)(ID=ID[i],m1=m1[i],m2=m2[i],m3=m3[i],m4=m4[i],t1=t1[i],t2=3000,t3=t3[i],f1=f1[i],f2=f2[i],f3=0,f4=0,Ne0=Ne0[i],Ne1=Ne1[i],Ne3=Ne3[i],Ne4=Ne4[i],w=100000,n=1) for i in range(num_reps))
+Sim = Parallel(n_jobs=50)(delayed(sim_pipeline)(ID=ID[i],m1=m1[i],m2=m2[i],m3=m3[i],m4=m4[i],t1=t1[i],t2=3000,t3=t3[i],f1=f1[i],f2=f2[i],f3=0,f4=0,Ne0=Ne0[i],Ne1=Ne1[i],Ne3=Ne3[i],Ne4=Ne4[i],w=100000,n=1) for i in range(num_reps))
