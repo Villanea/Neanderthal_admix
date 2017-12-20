@@ -17,7 +17,7 @@ import scipy.stats
 #TODO:
 
 def sim_pipeline(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,Ne0,Ne1,Ne3,Ne4,w,n):
-	print(ID)
+	#print(ID)
 	outfile = open('outfile_sim%s.bed' %(ID), 'w+')
 	outfile.close()
 
@@ -113,7 +113,7 @@ def bedops(ID):
 	os.system("rm outfile_sim%s.bed" %(ID))
 	os.system("bedops --element-of 1 outfile_sim%s_sorted.bed human_genome_mask_sorted.bed > outfile_sim%s_masked.bed" %(ID,ID))
 	os.system("rm outfile_sim%s_sorted.bed" %(ID))
-	print 'got through bedops'
+	#print 'got through bedops'
 
 def sys_stat(ID):
 		EU = np.genfromtxt('outfile_sim%s_masked.bed' %(ID), usecols=3)
@@ -173,6 +173,8 @@ def ofile(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,Ne0,Ne1,Ne3,Ne4):
 #t1 split time_1 26000-12000 gen 
 #t2 split time_2 2300 gen
 #t3 split time_3 1500 gen
+#f1 = a-(2/d) where a is the average introgression fractione between ASN and EUR, d is the difference between ASN-EUR
+#f2 = ((a-d/2)-(a+d/2))/((a-d/2)-1),where a is the mean introgression fractione between ASN and EUR, d is the difference between ASN-EUR
 #f1 0.022 - original neanderthal pulse
 #f2 0.01 - second pulse to east asia
 #f3 0.01 - second pulse to europe
@@ -183,7 +185,7 @@ def ofile(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,Ne0,Ne1,Ne3,Ne4):
 #Ne4 AS_EU ancestral pop Ne
 #EU=european pop 0, AS=asian pop 1, BE=basaleur pop 2, Nean pop 3    
 
-num_reps=1000
+num_reps = 999
 
 ID = np.random.randint(1,100000000,size=num_reps)
 t1 = scipy.stats.uniform.rvs(loc=10000, scale=16000, size=num_reps)
@@ -194,8 +196,10 @@ m_bound = 2000
 m2 = scipy.stats.uniform.rvs(loc=800, scale=(np.minimum(m_bound,t3)-800), size=num_reps)
 m3 = scipy.stats.uniform.rvs(loc=800, scale=(np.minimum(m_bound,t3)-800), size=num_reps)
 m4 = scipy.stats.uniform.rvs(loc=200, scale=(np.minimum(m_bound,t3)-200), size=num_reps)
-f1 = scipy.stats.uniform.rvs(loc=0, scale=0.1, size=num_reps)
-f2 = scipy.stats.uniform.rvs(loc=0, scale=0.02, size=num_reps)
+a = scipy.stats.uniform.rvs(loc=0.01, scale=0.02, size=num_reps)
+d = scipy.stats.uniform.rvs(loc=0, scale=0.01, size=num_reps)
+f1 = a-(d/2)
+f2 = ((a-(d/2))-(a+(d/2)))/((a-(d/2))-1)
 #f3 = scipy.stats.uniform.rvs(loc=0, scale=0.1, size=num_reps)
 #f4 = scipy.stats.uniform.rvs(loc=0, scale=0.5, size=num_reps)
 Ne0 = np.rint(scipy.stats.uniform.rvs(loc=5000, scale=95000, size=num_reps))
