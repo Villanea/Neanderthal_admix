@@ -1,8 +1,12 @@
 import numpy as np
 
-def Pk_site(site_probs):
+def Pk_site(site_probs,recal = lambda x: x):
 	n = len(site_probs)
 	z = np.zeros(n+1)
+	print site_probs
+	site_probs = recal(site_probs)
+	print site_probs
+	raw_input()
 	z[0] = 1-site_probs[0]
 	z[1] = site_probs[0]
 	for i in range(1,n):
@@ -13,7 +17,7 @@ def Pk_site(site_probs):
 
 	return z
 
-def Pk_genome(fn,step=100000):
+def Pk_genome(fn,step=100000,useMax=False, recal = lambda x: x):
 	chrom = "chr0"
 	genomeProbs = np.zeros(0)
 	i = 0
@@ -28,8 +32,16 @@ def Pk_genome(fn,step=100000):
 			end = pos
 		if pos < end:
 			continue
-		genomeProbs += Pk_site(probs)
+		curPk = Pk_site(probs,recal)
+		if useMax:
+			whichMax = np.argmax(curPk)
+			genomeProbs[whichMax] += 1
+		else: 
+			genomeProbs += curPk
 		end += step
 		if i % 1000 == 0: print i, curChrom, pos
 		i += 1
-	return genomeProbs		
+	return genomeProbs
+
+	
+		
