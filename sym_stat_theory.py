@@ -50,14 +50,32 @@ def beta_binom(k,n,alpha,beta, log=False):
 	else:
 		return np.exp(logP)
 
-def error_model(p,neg,pos,alpha,beta):
+#beta binomial error model
+#def error_model(p,neg,pos,alpha,beta):
+#	n = len(p)-1
+#	res = np.zeros(len(p))
+#	res[0] = (1-pos)*p[0] + neg*(1-p[0])
+#	f = beta_binom(np.arange(n+1),n,alpha,beta)
+#	f = f[1:]/(1-f[0])
+#	res[1:] = (1-neg)*p[1:] + pos*p[0]*f	
+#	return res
+
+#independent error model
+def error_model(p, neg, pos):
 	n = len(p)-1
 	res = np.zeros(len(p))
-	res[0] = (1-pos)*p[0] + neg*(1-p[0])
-	f = beta_binom(np.arange(n+1),n,alpha,beta)
-	f = f[1:]/(1-f[0])
-	res[1:] = (1-neg)*p[1:] + pos*p[0]*f	
+	k = np.arange(n+1)
+	error_prob = np.zeros((n+1,n+1))
+	for i in np.arange(n+1):
+		error_prob[:,i] = binom_dif(k-i,n-i,i,pos,neg)
+	res = np.dot(error_prob,p)
 	return res
+	
+
+def binom_dif(k,n1,n2,p1,p2):
+	i = np.arange(n2+1)
+	kmat = np.add.outer(k,i)
+	return np.dot(st.binom.pmf(kmat,n1,p1),st.binom.pmf(i,n2,p2))
 
 def one_pulse(f,t,n, error = None):
 	h = generate_het_one(f,n)
@@ -66,8 +84,8 @@ def one_pulse(f,t,n, error = None):
 	comb = sp.binom(n,np.arange(0,n+1))
 	sample *= comb
 	if error is not None:
-		neg, pos, alpha, beta = error
-		sample = error_model(sample,neg,pos,alpha,beta)
+		neg, pos = error
+		sample = error_model(sample,neg,pos)
 	return sample
 
 def two_pulse(f1,t1,f2,t2,n, error = None):
@@ -79,8 +97,8 @@ def two_pulse(f1,t1,f2,t2,n, error = None):
 	comb = sp.binom(n,np.arange(0,n+1))
 	sample *= comb
 	if error is not None:
-		neg, pos, alpha, beta = error
-		sample = error_model(sample, neg, pos, alpha, beta)
+		neg, pos = error
+		sample = error_model(sample, neg, pos)
 	return sample
 
 def dilution(f1,t1,f2,t2,n):

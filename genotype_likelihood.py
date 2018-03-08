@@ -3,10 +3,7 @@ import numpy as np
 def Pk_site(site_probs,recal = lambda x: x):
 	n = len(site_probs)
 	z = np.zeros(n+1)
-	print site_probs
 	site_probs = recal(site_probs)
-	print site_probs
-	raw_input()
 	z[0] = 1-site_probs[0]
 	z[1] = site_probs[0]
 	for i in range(1,n):
@@ -25,7 +22,7 @@ def Pk_genome(fn,step=100000,useMax=False, recal = lambda x: x):
 		splitLine = line.split()
 		curChrom = splitLine[0]
 		pos = int(splitLine[1])
-		probs = map(float, splitLine[3:])
+		probs = np.array(splitLine[3:],dtype=np.float64)
 		if len(genomeProbs) == 0: genomeProbs = np.zeros(len(probs)+1)
 		if curChrom != chrom:
 			chrom = curChrom
@@ -38,7 +35,7 @@ def Pk_genome(fn,step=100000,useMax=False, recal = lambda x: x):
 			genomeProbs[whichMax] += 1
 		else: 
 			genomeProbs += curPk
-		end += step
+		end += step +1
 		if i % 1000 == 0: print i, curChrom, pos
 		i += 1
 	return genomeProbs
