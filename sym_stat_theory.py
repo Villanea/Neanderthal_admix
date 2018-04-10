@@ -174,7 +174,7 @@ def fit_two_two(dat):
 	n = len(dat)
 	return opt.curve_fit(lambda x, f1,fa,fe,tp,ta1,ta2,te1,te2: sym_stat_two_two(f1,fa,fe,tp,ta1,ta2,te1,te2,n,True), 1, dat, p0 = st.uniform.rvs(size=8,scale=.5), bounds=((0,0,0,0,0,0,0,0),(.5,.5,.5,.5,.5,.5,.5,.5)))#,ftol=1e-10,gtol=1e-10)
 
-def one_like(dat, f, t,start=1, end = None,error = 0):
+def one_like(dat, f, t,start=0, end = None,error = 0):
 	n = len(dat)-1
 	if end is None:
 		end = len(dat)
@@ -185,7 +185,7 @@ def one_like(dat, f, t,start=1, end = None,error = 0):
 	print f, t, error,  lnL
 	return lnL
 
-def two_like(dat, f1, t1, f2, t2, start = 1, end = None, error = 0):
+def two_like(dat, f1, t1, f2, t2, start = 0, end = None, error = 0):
 	n = len(dat) - 1
 	if end is None:
 		end = len(dat)
@@ -196,7 +196,7 @@ def two_like(dat, f1, t1, f2, t2, start = 1, end = None, error = 0):
 	print f1, t1, f2, t2, error, lnL
 	return lnL
 
-def sel_like(dat, f, t, gamma, start = 1, end = None, error = 0):
+def sel_like(dat, f, t, gamma, start = 0, end = None, error = 0):
 	n = len(dat) - 1
 	if end is None:
 		end = len(dat)
@@ -207,6 +207,37 @@ def sel_like(dat, f, t, gamma, start = 1, end = None, error = 0):
 	print f, t, gamma, error, lnL
 	return lnL
 
+def like_given_expected(dat,expected, start = 0, end = None):
+	if end is None:
+		end = len(dat)
+	if len(dat) != len(expected):
+		print "Error: dat and expected should be same length"
+		return 0
+	e = expected[start:end]
+	d = dat[start:end]
+	lnL = np.sum(d*np.log(e))
+	return lnL	
+
+def bootstrap_deriv(dat_boot, param, func, eps=1e-8):
+	if len(dat_boot) == 1:
+		print "Warning: dat_boot should be a list of bootstrap replicates of the data"
+	e = []
+	e.append(func(param))
+	for i in range(len(param)):
+		cur_eps = np.zeros(len(param))
+		cur_eps[i]+=eps
+		e.append(func(param+cur_eps))
+		print len(e[-1])
+	d = []
+	for i in range(len(dat_boot)):
+		cur_d = []
+		cur_f0 = like_given_expected(dat_boot[i],e[0])
+		for j in range(len(param)):
+			cur_feps = like_given_expected(dat_boot[i],e[j])
+			cur_d.append((cur_feps-cur_f0)/eps)
+		d.append(cur_d)
+	return np.array(d)
+		
 
 #project down to 100 by 100 matrix
 def lchoose(N,k):
