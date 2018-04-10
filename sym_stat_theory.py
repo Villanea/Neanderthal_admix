@@ -233,7 +233,7 @@ def bootstrap_deriv(dat_boot, param, func, eps=1e-8):
 		cur_d = []
 		cur_f0 = like_given_expected(dat_boot[i],e[0])
 		for j in range(len(param)):
-			cur_feps = like_given_expected(dat_boot[i],e[j])
+			cur_feps = like_given_expected(dat_boot[i],e[j+1])
 			cur_d.append((cur_feps-cur_f0)/eps)
 		d.append(cur_d)
 	return np.array(d)
