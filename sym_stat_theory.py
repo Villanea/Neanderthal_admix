@@ -182,7 +182,7 @@ def one_like(dat, f, t,start=0, end = None,error = 0):
 	theory = one_pulse(f,t,n,error=error)[start:end]
 	theory = theory/np.sum(theory)
 	lnL = np.sum(dat*np.log(theory))
-	print f, t, error,  lnL
+	#print f, t, error,  lnL
 	return lnL
 
 def two_like(dat, f1, t1, f2, t2, start = 0, end = None, error = 0):
@@ -193,7 +193,7 @@ def two_like(dat, f1, t1, f2, t2, start = 0, end = None, error = 0):
 	theory = two_pulse(f1,t1,f2,t2,n, error=error)[start:end]
 	theory = theory/np.sum(theory)
 	lnL = np.sum(dat*np.log(theory))
-	print f1, t1, f2, t2, error, lnL
+	#print f1, t1, f2, t2, error, lnL
 	return lnL
 
 def sel_like(dat, f, t, gamma, start = 0, end = None, error = 0):
@@ -204,7 +204,7 @@ def sel_like(dat, f, t, gamma, start = 0, end = None, error = 0):
 	theory = one_pulse_sel(f,t,gamma,n,error=error)[start:end]
 	theory = theory/np.sum(theory)
 	lnL = np.sum(dat*np.log(theory))
-	print f, t, gamma, error, lnL
+	#print f, t, gamma, error, lnL
 	return lnL
 
 def like_given_expected(dat,expected, start = 0, end = None):
