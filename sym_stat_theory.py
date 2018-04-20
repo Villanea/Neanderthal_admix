@@ -50,14 +50,32 @@ def beta_binom(k,n,alpha,beta, log=False):
 	else:
 		return np.exp(logP)
 
-def error_model(p,neg,pos,alpha,beta):
+#beta binomial error model
+#def error_model(p,neg,pos,alpha,beta):
+#	n = len(p)-1
+#	res = np.zeros(len(p))
+#	res[0] = (1-pos)*p[0] + neg*(1-p[0])
+#	f = beta_binom(np.arange(n+1),n,alpha,beta)
+#	f = f[1:]/(1-f[0])
+#	res[1:] = (1-neg)*p[1:] + pos*p[0]*f	
+#	return res
+
+#independent error model
+def error_model(p, neg, pos):
 	n = len(p)-1
 	res = np.zeros(len(p))
-	res[0] = (1-pos)*p[0] + neg*(1-p[0])
-	f = beta_binom(np.arange(n+1),n,alpha,beta)
-	f = f[1:]/(1-f[0])
-	res[1:] = (1-neg)*p[1:] + pos*p[0]*f	
+	k = np.arange(n+1)
+	error_prob = np.zeros((n+1,n+1))
+	for i in np.arange(n+1):
+		error_prob[:,i] = binom_dif(k-i,n-i,i,pos,neg)
+	res = np.dot(error_prob,p)
 	return res
+	
+
+def binom_dif(k,n1,n2,p1,p2):
+	i = np.arange(n2+1)
+	kmat = np.add.outer(k,i)
+	return np.dot(st.binom.pmf(kmat,n1,p1),st.binom.pmf(i,n2,p2))
 
 def one_pulse(f,t,n, error = None):
 	h = generate_het_one(f,n)
@@ -66,8 +84,8 @@ def one_pulse(f,t,n, error = None):
 	comb = sp.binom(n,np.arange(0,n+1))
 	sample *= comb
 	if error is not None:
-		neg, pos, alpha, beta = error
-		sample = error_model(sample,neg,pos,alpha,beta)
+		neg, pos = error
+		sample = error_model(sample,neg,pos)
 	return sample
 
 def two_pulse(f1,t1,f2,t2,n, error = None):
@@ -79,8 +97,8 @@ def two_pulse(f1,t1,f2,t2,n, error = None):
 	comb = sp.binom(n,np.arange(0,n+1))
 	sample *= comb
 	if error is not None:
-		neg, pos, alpha, beta = error
-		sample = error_model(sample, neg, pos, alpha, beta)
+		neg, pos = error
+		sample = error_model(sample, neg, pos)
 	return sample
 
 def dilution(f1,t1,f2,t2,n):
@@ -156,7 +174,7 @@ def fit_two_two(dat):
 	n = len(dat)
 	return opt.curve_fit(lambda x, f1,fa,fe,tp,ta1,ta2,te1,te2: sym_stat_two_two(f1,fa,fe,tp,ta1,ta2,te1,te2,n,True), 1, dat, p0 = st.uniform.rvs(size=8,scale=.5), bounds=((0,0,0,0,0,0,0,0),(.5,.5,.5,.5,.5,.5,.5,.5)))#,ftol=1e-10,gtol=1e-10)
 
-def one_like(dat, f, t,start=1, end = None,error = 0):
+def one_like(dat, f, t,start=0, end = None,error = 0):
 	n = len(dat)-1
 	if end is None:
 		end = len(dat)
@@ -164,10 +182,10 @@ def one_like(dat, f, t,start=1, end = None,error = 0):
 	theory = one_pulse(f,t,n,error=error)[start:end]
 	theory = theory/np.sum(theory)
 	lnL = np.sum(dat*np.log(theory))
-	print f, t, error,  lnL
+	#print f, t, error,  lnL
 	return lnL
 
-def two_like(dat, f1, t1, f2, t2, start = 1, end = None, error = 0):
+def two_like(dat, f1, t1, f2, t2, start = 0, end = None, error = 0):
 	n = len(dat) - 1
 	if end is None:
 		end = len(dat)
@@ -175,10 +193,10 @@ def two_like(dat, f1, t1, f2, t2, start = 1, end = None, error = 0):
 	theory = two_pulse(f1,t1,f2,t2,n, error=error)[start:end]
 	theory = theory/np.sum(theory)
 	lnL = np.sum(dat*np.log(theory))
-	print f1, t1, f2, t2, error, lnL
+	#print f1, t1, f2, t2, error, lnL
 	return lnL
 
-def sel_like(dat, f, t, gamma, start = 1, end = None, error = 0):
+def sel_like(dat, f, t, gamma, start = 0, end = None, error = 0):
 	n = len(dat) - 1
 	if end is None:
 		end = len(dat)
@@ -186,9 +204,40 @@ def sel_like(dat, f, t, gamma, start = 1, end = None, error = 0):
 	theory = one_pulse_sel(f,t,gamma,n,error=error)[start:end]
 	theory = theory/np.sum(theory)
 	lnL = np.sum(dat*np.log(theory))
-	print f, t, gamma, error, lnL
+	#print f, t, gamma, error, lnL
 	return lnL
 
+def like_given_expected(dat,expected, start = 0, end = None):
+	if end is None:
+		end = len(dat)
+	if len(dat) != len(expected):
+		print "Error: dat and expected should be same length"
+		return 0
+	e = expected[start:end]
+	d = dat[start:end]
+	lnL = np.sum(d*np.log(e))
+	return lnL	
+
+def bootstrap_deriv(dat_boot, param, func, eps=1e-8):
+	if len(dat_boot) == 1:
+		print "Warning: dat_boot should be a list of bootstrap replicates of the data"
+	e = []
+	e.append(func(param))
+	for i in range(len(param)):
+		cur_eps = np.zeros(len(param))
+		cur_eps[i]+=eps
+		e.append(func(param+cur_eps))
+		print len(e[-1])
+	d = []
+	for i in range(len(dat_boot)):
+		cur_d = []
+		cur_f0 = like_given_expected(dat_boot[i],e[0])
+		for j in range(len(param)):
+			cur_feps = like_given_expected(dat_boot[i],e[j+1])
+			cur_d.append((cur_feps-cur_f0)/eps)
+		d.append(cur_d)
+	return np.array(d)
+		
 
 #project down to 100 by 100 matrix
 def lchoose(N,k):
