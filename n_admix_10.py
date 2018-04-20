@@ -55,7 +55,7 @@ def neanderthal_admixture_model(ID=1,seed=1,num_eu=170,num_as=394,num_nean = 1,a
 		sims = msp.simulate(samples=samples,Ne=Ne0,population_configurations=pop_config,demographic_events=divergence,mutation_rate=mu,recombination_map=rho_map,num_replicates=num_rep)
 		#print("done simulating")
 		chrom = "chr%s" %(chr)
-		#print(chrom)
+		print(chrom)
 		pos = []
 		pos1 = []
 		freq_EU = []
@@ -185,7 +185,7 @@ def ofile(ID,m1,m2,m3,m4,t1,t2,t3,f1,f2,f3,f4,Ne0,Ne1,Ne3,Ne4):
 #Ne4 AS_EU ancestral pop Ne
 #EU=european pop 0, AS=asian pop 1, BE=basaleur pop 2, Nean pop 3    
 
-num_reps = 1
+num_reps = 4000
 
 ID = np.random.randint(1,100000000,size=num_reps)
 t1 = scipy.stats.uniform.rvs(loc=10000, scale=16000, size=num_reps)
@@ -198,9 +198,11 @@ m3 = scipy.stats.uniform.rvs(loc=800, scale=(np.minimum(m_bound,t3)-800), size=n
 m4 = scipy.stats.uniform.rvs(loc=200, scale=(np.minimum(m_bound,t3)-200), size=num_reps)
 a = scipy.stats.uniform.rvs(loc=0.01, scale=0.02, size=num_reps)
 d = scipy.stats.uniform.rvs(loc=0, scale=0.01, size=num_reps)
-f1 = a-(d/2)#a-(d/2) for EU centric cases
-f2 = d/(1+(d/2)-a)
-#f3 = scipy.stats.uniform.rvs(loc=0, scale=0.1, size=num_reps)
+#f1 = a-(d/2)
+f1 = scipy.stats.uniform.rvs(loc=0, scale=(a-(d/2)), size=num_reps)#a+(d/2) for f4
+f2=(2*a+d-2*f1)/(2-2*f1)
+f4 = scipy.stats.uniform.rvs(loc=0, scale=0.5, size=num_reps)
+f3 = -((-2*a+d-2*f1*(-1+f4))/(2*(-1+f1)*(-1+f4)))
 #f4 = d/(a+(d/2))
 Ne0 = np.rint(scipy.stats.uniform.rvs(loc=5000, scale=95000, size=num_reps))
 #print(Ne0)
@@ -213,4 +215,4 @@ Ne4 = np.rint(scipy.stats.uniform.rvs(loc=5000, scale=45000, size=num_reps))
 
 #Sim = Parallel(n_jobs=1)(delayed(sim_pipeline)(ID[i],m1=2000,m2=1000,m3=1000,m4=1000,t1=12000,t2=2300,t3=1500,f1=0.022,f2=0.01,f3=0.01,f4=0.2,Ne0=10000,Ne1=10000,Ne3=2500,Ne4=10000,w=100000,n=1) for i in range(2))
 
-Sim = Parallel(n_jobs=1)(delayed(sim_pipeline)(ID=ID[i],m1=m1[i],m2=m2[i],m3=m3[i],m4=m4[i],t1=t1[i],t2=3000,t3=t3[i],f1=f1[i],f2=f2[i],f3=0,f4=0,Ne0=Ne0[i],Ne1=Ne1[i],Ne3=Ne3[i],Ne4=Ne4[i],w=100000,n=1) for i in range(num_reps))
+Sim = Parallel(n_jobs=50)(delayed(sim_pipeline)(ID=ID[i],m1=m1[i],m2=m2[i],m3=m3[i],m4=m4[i],t1=t1[i],t2=3000,t3=t3[i],f1=f1[i],f2=f2[i],f3=f3[i],f4=f4[i],Ne0=Ne0[i],Ne1=Ne1[i],Ne3=Ne3[i],Ne4=Ne4[i],w=100000,n=1) for i in range(num_reps))
