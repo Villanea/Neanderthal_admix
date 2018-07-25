@@ -71,19 +71,18 @@ def error_model(p, neg, pos):
 	res = np.dot(error_prob,p)
 	return res
 	
-def error_model_2d(p,neg,pos):
+def error_model_2d(p,neg1,pos1,neg2,pos2):
 	n1, n2 = np.array(p.shape)-1
 	res = np.zeros((n1,n2))
 	k1 = np.arange(n1+1)
 	k2 = np.arange(n2+1)
 	error_prob = np.zeros((n1+1,n1+1))
 	for i in np.arange(n1+1):
-		error_prob[:,i] = binom_dif(k1-i,n1-i,i,pos,neg)
+		error_prob[:,i] = binom_dif(k1-i,n1-i,i,pos1,neg1)
 	res = np.dot(error_prob,p)
-	print "First errors done"
 	error_prob = np.zeros((n2+1,n2+1))
 	for j in np.arange(n2+1):
-		error_prob[j,:] = binom_dif(k2-j,n2-j,j,pos,neg)
+		error_prob[j,:] = binom_dif(k2-j,n2-j,j,pos2,neg2)
 	res = np.dot(res,error_prob)
 	return res
 		
