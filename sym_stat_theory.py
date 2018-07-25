@@ -71,6 +71,22 @@ def error_model(p, neg, pos):
 	res = np.dot(error_prob,p)
 	return res
 	
+def error_model_2d(p,neg,pos):
+	n1, n2 = np.array(p.shape)-1
+	res = np.zeros((n1,n2))
+	k1 = np.arange(n1+1)
+	k2 = np.arange(n2+1)
+	error_prob = np.zeros((n1+1,n1+1))
+	for i in np.arange(n1+1):
+		error_prob[:,i] = binom_dif(k1-i,n1-i,i,pos,neg)
+	res = np.dot(error_prob,p)
+	print "First errors done"
+	error_prob = np.zeros((n2+1,n2+1))
+	for j in np.arange(n2+1):
+		error_prob[j,:] = binom_dif(k2-j,n2-j,j,pos,neg)
+	res = np.dot(res,error_prob)
+	return res
+		
 
 def binom_dif(k,n1,n2,p1,p2):
 	i = np.arange(n2+1)
@@ -251,3 +267,18 @@ def project_down(d,m):
 	for i in np.arange(0,m+1):
 		res[i] = np.sum(d*np.exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m))) #check this line: res[i+1] = sum(d*exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m)))
 	return res
+
+def make_PD_operator(n,m):
+    PD = np.zeros((m+1,n+1))
+    l = np.arange(n+1)
+    for i in range(m+1):
+        PD[i,:] = np.exp(lchoose(l,i)+lchoose(n-l,m-i)-lchoose(n,m))
+    return PD
+    
+def project_down_matrix(d,m1,m2):
+    n1,n2=np.array(d.shape)-1
+    PD1 = make_PD_operator(n1,m1)
+    PD2 = make_PD_operator(n2,m2)
+    res = np.dot(PD1,d)
+    res = np.dot(res,PD2.transpose())
+    return res
